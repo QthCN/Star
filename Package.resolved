@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "swift-tree-sitter",
+        "repositoryURL": "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/swift-tree-sitter",
+        "state": {
+          "branch": "main",
+          "revision": "b1bf1c26056c5cff945ca3ca97e0970dcda040e1",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
