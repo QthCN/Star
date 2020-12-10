@@ -20,12 +20,13 @@ class GoParser: Star.Parser {
         tsParser.setLanguage(lang_go)
     }
     
-    func parse(content: String) -> Star.AST? {
+    func parse(content: String) -> Star.CompilationUnion {
         if let tree = self.tsParser.parse(text: content.utf8) {
-            return self.transform(tree)
-        } else {
-            return nil
+            if let ast = self.transform(tree) {
+                return Star.CompilationUnion(ast: ast, content: content)
+            }
         }
+        return Star.CompilationUnion(content: content)
     }
     
     
