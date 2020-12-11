@@ -9,9 +9,11 @@ import Foundation
 
 open class AST {
     let pos: Position
+    weak var parent: AST?
     
-    public init(pos: Position) {
+    public init(pos: Position, parent: AST? = nil) {
         self.pos = pos
+        self.parent = parent
     }
 }
 
