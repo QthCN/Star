@@ -1,4 +1,4 @@
-// This file is auto-generated from ts2st_GoAST_20201210230735
+// This file is auto-generated from ts2st_GoAST_20201212142254
 
 import Foundation
 import Star
@@ -38,6 +38,15 @@ extension GoParser {
     }
 
     func leave_binary_expression(_ node: goast_binary_expression) {
+
+    }
+
+    /// callback: blank_identifier
+    func enter_blank_identifier() {
+
+    }
+
+    func leave_blank_identifier(_ node: goast_blank_identifier) {
 
     }
 
@@ -176,6 +185,15 @@ extension GoParser {
 
     }
 
+    /// callback: escape_sequence
+    func enter_escape_sequence() {
+
+    }
+
+    func leave_escape_sequence(_ node: goast_escape_sequence) {
+
+    }
+
     /// callback: expression_case
     func enter_expression_case() {
 
@@ -212,6 +230,15 @@ extension GoParser {
 
     }
 
+    /// callback: false
+    func enter_false() {
+
+    }
+
+    func leave_false(_ node: goast_false) {
+
+    }
+
     /// callback: field_declaration
     func enter_field_declaration() {
 
@@ -227,6 +254,24 @@ extension GoParser {
     }
 
     func leave_field_declaration_list(_ node: goast_field_declaration_list) {
+
+    }
+
+    /// callback: field_identifier
+    func enter_field_identifier() {
+
+    }
+
+    func leave_field_identifier(_ node: goast_field_identifier) {
+
+    }
+
+    /// callback: float_literal
+    func enter_float_literal() {
+
+    }
+
+    func leave_float_literal(_ node: goast_float_literal) {
 
     }
 
@@ -293,12 +338,30 @@ extension GoParser {
 
     }
 
+    /// callback: identifier
+    func enter_identifier() {
+
+    }
+
+    func leave_identifier(_ node: goast_identifier) {
+
+    }
+
     /// callback: if_statement
     func enter_if_statement() {
 
     }
 
     func leave_if_statement(_ node: goast_if_statement) {
+
+    }
+
+    /// callback: imaginary_literal
+    func enter_imaginary_literal() {
+
+    }
+
+    func leave_imaginary_literal(_ node: goast_imaginary_literal) {
 
     }
 
@@ -356,6 +419,15 @@ extension GoParser {
 
     }
 
+    /// callback: int_literal
+    func enter_int_literal() {
+
+    }
+
+    func leave_int_literal(_ node: goast_int_literal) {
+
+    }
+
     /// callback: interface_type
     func enter_interface_type() {
 
@@ -380,6 +452,15 @@ extension GoParser {
     }
 
     func leave_keyed_element(_ node: goast_keyed_element) {
+
+    }
+
+    /// callback: label_name
+    func enter_label_name() {
+
+    }
+
+    func leave_label_name(_ node: goast_label_name) {
 
     }
 
@@ -437,12 +518,30 @@ extension GoParser {
 
     }
 
+    /// callback: nil
+    func enter_nil() {
+
+    }
+
+    func leave_nil(_ node: goast_nil) {
+
+    }
+
     /// callback: package_clause
     func enter_package_clause() {
 
     }
 
     func leave_package_clause(_ node: goast_package_clause) {
+
+    }
+
+    /// callback: package_identifier
+    func enter_package_identifier() {
+
+    }
+
+    func leave_package_identifier(_ node: goast_package_identifier) {
 
     }
 
@@ -509,6 +608,15 @@ extension GoParser {
 
     }
 
+    /// callback: raw_string_literal
+    func enter_raw_string_literal() {
+
+    }
+
+    func leave_raw_string_literal(_ node: goast_raw_string_literal) {
+
+    }
+
     /// callback: receive_statement
     func enter_receive_statement() {
 
@@ -524,6 +632,15 @@ extension GoParser {
     }
 
     func leave_return_statement(_ node: goast_return_statement) {
+
+    }
+
+    /// callback: rune_literal
+    func enter_rune_literal() {
+
+    }
+
+    func leave_rune_literal(_ node: goast_rune_literal) {
 
     }
 
@@ -599,6 +716,15 @@ extension GoParser {
 
     }
 
+    /// callback: true
+    func enter_true() {
+
+    }
+
+    func leave_true(_ node: goast_true) {
+
+    }
+
     /// callback: type_alias
     func enter_type_alias() {
 
@@ -641,6 +767,15 @@ extension GoParser {
     }
 
     func leave_type_declaration(_ node: goast_type_declaration) {
+
+    }
+
+    /// callback: type_identifier
+    func enter_type_identifier() {
+
+    }
+
+    func leave_type_identifier(_ node: goast_type_identifier) {
 
     }
 
@@ -704,141 +839,6 @@ extension GoParser {
     }
 
     func leave_variadic_parameter_declaration(_ node: goast_variadic_parameter_declaration) {
-
-    }
-
-    /// callback: blank_identifier
-    func enter_blank_identifier() {
-
-    }
-
-    func leave_blank_identifier(_ node: goast_blank_identifier) {
-
-    }
-
-    /// callback: escape_sequence
-    func enter_escape_sequence() {
-
-    }
-
-    func leave_escape_sequence(_ node: goast_escape_sequence) {
-
-    }
-
-    /// callback: false
-    func enter_false() {
-
-    }
-
-    func leave_false(_ node: goast_false) {
-
-    }
-
-    /// callback: field_identifier
-    func enter_field_identifier() {
-
-    }
-
-    func leave_field_identifier(_ node: goast_field_identifier) {
-
-    }
-
-    /// callback: float_literal
-    func enter_float_literal() {
-
-    }
-
-    func leave_float_literal(_ node: goast_float_literal) {
-
-    }
-
-    /// callback: identifier
-    func enter_identifier() {
-
-    }
-
-    func leave_identifier(_ node: goast_identifier) {
-
-    }
-
-    /// callback: imaginary_literal
-    func enter_imaginary_literal() {
-
-    }
-
-    func leave_imaginary_literal(_ node: goast_imaginary_literal) {
-
-    }
-
-    /// callback: int_literal
-    func enter_int_literal() {
-
-    }
-
-    func leave_int_literal(_ node: goast_int_literal) {
-
-    }
-
-    /// callback: label_name
-    func enter_label_name() {
-
-    }
-
-    func leave_label_name(_ node: goast_label_name) {
-
-    }
-
-    /// callback: nil
-    func enter_nil() {
-
-    }
-
-    func leave_nil(_ node: goast_nil) {
-
-    }
-
-    /// callback: package_identifier
-    func enter_package_identifier() {
-
-    }
-
-    func leave_package_identifier(_ node: goast_package_identifier) {
-
-    }
-
-    /// callback: raw_string_literal
-    func enter_raw_string_literal() {
-
-    }
-
-    func leave_raw_string_literal(_ node: goast_raw_string_literal) {
-
-    }
-
-    /// callback: rune_literal
-    func enter_rune_literal() {
-
-    }
-
-    func leave_rune_literal(_ node: goast_rune_literal) {
-
-    }
-
-    /// callback: true
-    func enter_true() {
-
-    }
-
-    func leave_true(_ node: goast_true) {
-
-    }
-
-    /// callback: type_identifier
-    func enter_type_identifier() {
-
-    }
-
-    func leave_type_identifier(_ node: goast_type_identifier) {
 
     }
 

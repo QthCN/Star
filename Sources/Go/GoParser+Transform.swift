@@ -1,4 +1,4 @@
-// This file is auto-generated from ts2st_GoAST_20201211083127
+// This file is auto-generated from ts2st_GoAST_20201212142254
 
 import Foundation
 import SwiftTreeSitter
@@ -57,6 +57,10 @@ extension GoParser {
                     }
                 case "binary_expression":
                     if let node = self.transform_binary_expression(cursor, parent) {
+                        nodes.append(node)
+                    }
+                case "blank_identifier":
+                    if let node = self.transform_blank_identifier(cursor, parent) {
                         nodes.append(node)
                     }
                 case "block":
@@ -119,6 +123,10 @@ extension GoParser {
                     if let node = self.transform_empty_statement(cursor, parent) {
                         nodes.append(node)
                     }
+                case "escape_sequence":
+                    if let node = self.transform_escape_sequence(cursor, parent) {
+                        nodes.append(node)
+                    }
                 case "expression_case":
                     if let node = self.transform_expression_case(cursor, parent) {
                         nodes.append(node)
@@ -135,12 +143,24 @@ extension GoParser {
                     if let node = self.transform_fallthrough_statement(cursor, parent) {
                         nodes.append(node)
                     }
+                case "false":
+                    if let node = self.transform_false(cursor, parent) {
+                        nodes.append(node)
+                    }
                 case "field_declaration":
                     if let node = self.transform_field_declaration(cursor, parent) {
                         nodes.append(node)
                     }
                 case "field_declaration_list":
                     if let node = self.transform_field_declaration_list(cursor, parent) {
+                        nodes.append(node)
+                    }
+                case "field_identifier":
+                    if let node = self.transform_field_identifier(cursor, parent) {
+                        nodes.append(node)
+                    }
+                case "float_literal":
+                    if let node = self.transform_float_literal(cursor, parent) {
                         nodes.append(node)
                     }
                 case "for_clause":
@@ -171,8 +191,16 @@ extension GoParser {
                     if let node = self.transform_goto_statement(cursor, parent) {
                         nodes.append(node)
                     }
+                case "identifier":
+                    if let node = self.transform_identifier(cursor, parent) {
+                        nodes.append(node)
+                    }
                 case "if_statement":
                     if let node = self.transform_if_statement(cursor, parent) {
+                        nodes.append(node)
+                    }
+                case "imaginary_literal":
+                    if let node = self.transform_imaginary_literal(cursor, parent) {
                         nodes.append(node)
                     }
                 case "implicit_length_array_type":
@@ -199,6 +227,10 @@ extension GoParser {
                     if let node = self.transform_index_expression(cursor, parent) {
                         nodes.append(node)
                     }
+                case "int_literal":
+                    if let node = self.transform_int_literal(cursor, parent) {
+                        nodes.append(node)
+                    }
                 case "interface_type":
                     if let node = self.transform_interface_type(cursor, parent) {
                         nodes.append(node)
@@ -209,6 +241,10 @@ extension GoParser {
                     }
                 case "keyed_element":
                     if let node = self.transform_keyed_element(cursor, parent) {
+                        nodes.append(node)
+                    }
+                case "label_name":
+                    if let node = self.transform_label_name(cursor, parent) {
                         nodes.append(node)
                     }
                 case "labeled_statement":
@@ -235,8 +271,16 @@ extension GoParser {
                     if let node = self.transform_method_spec_list(cursor, parent) {
                         nodes.append(node)
                     }
+                case "nil":
+                    if let node = self.transform_nil(cursor, parent) {
+                        nodes.append(node)
+                    }
                 case "package_clause":
                     if let node = self.transform_package_clause(cursor, parent) {
+                        nodes.append(node)
+                    }
+                case "package_identifier":
+                    if let node = self.transform_package_identifier(cursor, parent) {
                         nodes.append(node)
                     }
                 case "parameter_declaration":
@@ -267,12 +311,20 @@ extension GoParser {
                     if let node = self.transform_range_clause(cursor, parent) {
                         nodes.append(node)
                     }
+                case "raw_string_literal":
+                    if let node = self.transform_raw_string_literal(cursor, parent) {
+                        nodes.append(node)
+                    }
                 case "receive_statement":
                     if let node = self.transform_receive_statement(cursor, parent) {
                         nodes.append(node)
                     }
                 case "return_statement":
                     if let node = self.transform_return_statement(cursor, parent) {
+                        nodes.append(node)
+                    }
+                case "rune_literal":
+                    if let node = self.transform_rune_literal(cursor, parent) {
                         nodes.append(node)
                     }
                 case "select_statement":
@@ -307,6 +359,10 @@ extension GoParser {
                     if let node = self.transform_struct_type(cursor, parent) {
                         nodes.append(node)
                     }
+                case "true":
+                    if let node = self.transform_true(cursor, parent) {
+                        nodes.append(node)
+                    }
                 case "type_alias":
                     if let node = self.transform_type_alias(cursor, parent) {
                         nodes.append(node)
@@ -325,6 +381,10 @@ extension GoParser {
                     }
                 case "type_declaration":
                     if let node = self.transform_type_declaration(cursor, parent) {
+                        nodes.append(node)
+                    }
+                case "type_identifier":
+                    if let node = self.transform_type_identifier(cursor, parent) {
                         nodes.append(node)
                     }
                 case "type_spec":
@@ -353,66 +413,6 @@ extension GoParser {
                     }
                 case "variadic_parameter_declaration":
                     if let node = self.transform_variadic_parameter_declaration(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "blank_identifier":
-                    if let node = self.transform_blank_identifier(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "escape_sequence":
-                    if let node = self.transform_escape_sequence(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "false":
-                    if let node = self.transform_false(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "field_identifier":
-                    if let node = self.transform_field_identifier(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "float_literal":
-                    if let node = self.transform_float_literal(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "identifier":
-                    if let node = self.transform_identifier(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "imaginary_literal":
-                    if let node = self.transform_imaginary_literal(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "int_literal":
-                    if let node = self.transform_int_literal(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "label_name":
-                    if let node = self.transform_label_name(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "nil":
-                    if let node = self.transform_nil(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "package_identifier":
-                    if let node = self.transform_package_identifier(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "raw_string_literal":
-                    if let node = self.transform_raw_string_literal(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "rune_literal":
-                    if let node = self.transform_rune_literal(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "true":
-                    if let node = self.transform_true(cursor, parent) {
-                        nodes.append(node)
-                    }
-                case "type_identifier":
-                    if let node = self.transform_type_identifier(cursor, parent) {
                         nodes.append(node)
                     }
                 default:
@@ -740,6 +740,20 @@ extension GoParser {
             _ = cursor.gotoParent()
         }
         self.leave_binary_expression(node)
+        return node
+    }
+
+    func transform_blank_identifier(_ cursor: TreeCursor, _ parent: AST?) -> goast_blank_identifier? {
+        self.enter_blank_identifier()
+        let node = goast_blank_identifier(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_blank_identifier(node)
         return node
     }
 
@@ -1191,6 +1205,20 @@ extension GoParser {
         return node
     }
 
+    func transform_escape_sequence(_ cursor: TreeCursor, _ parent: AST?) -> goast_escape_sequence? {
+        self.enter_escape_sequence()
+        let node = goast_escape_sequence(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_escape_sequence(node)
+        return node
+    }
+
     func transform_expression_case(_ cursor: TreeCursor, _ parent: AST?) -> goast_expression_case? {
         self.enter_expression_case()
         let node = goast_expression_case(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
@@ -1315,6 +1343,20 @@ extension GoParser {
         return node
     }
 
+    func transform_false(_ cursor: TreeCursor, _ parent: AST?) -> goast_false? {
+        self.enter_false()
+        let node = goast_false(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_false(node)
+        return node
+    }
+
     func transform_field_declaration(_ cursor: TreeCursor, _ parent: AST?) -> goast_field_declaration? {
         self.enter_field_declaration()
         let node = goast_field_declaration(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
@@ -1385,6 +1427,34 @@ extension GoParser {
             _ = cursor.gotoParent()
         }
         self.leave_field_declaration_list(node)
+        return node
+    }
+
+    func transform_field_identifier(_ cursor: TreeCursor, _ parent: AST?) -> goast_field_identifier? {
+        self.enter_field_identifier()
+        let node = goast_field_identifier(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_field_identifier(node)
+        return node
+    }
+
+    func transform_float_literal(_ cursor: TreeCursor, _ parent: AST?) -> goast_float_literal? {
+        self.enter_float_literal()
+        let node = goast_float_literal(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_float_literal(node)
         return node
     }
 
@@ -1656,6 +1726,20 @@ extension GoParser {
         return node
     }
 
+    func transform_identifier(_ cursor: TreeCursor, _ parent: AST?) -> goast_identifier? {
+        self.enter_identifier()
+        let node = goast_identifier(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_identifier(node)
+        return node
+    }
+
     func transform_if_statement(_ cursor: TreeCursor, _ parent: AST?) -> goast_if_statement? {
         self.enter_if_statement()
         let node = goast_if_statement(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
@@ -1706,6 +1790,20 @@ extension GoParser {
             _ = cursor.gotoParent()
         }
         self.leave_if_statement(node)
+        return node
+    }
+
+    func transform_imaginary_literal(_ cursor: TreeCursor, _ parent: AST?) -> goast_imaginary_literal? {
+        self.enter_imaginary_literal()
+        let node = goast_imaginary_literal(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_imaginary_literal(node)
         return node
     }
 
@@ -1894,6 +1992,20 @@ extension GoParser {
         return node
     }
 
+    func transform_int_literal(_ cursor: TreeCursor, _ parent: AST?) -> goast_int_literal? {
+        self.enter_int_literal()
+        let node = goast_int_literal(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_int_literal(node)
+        return node
+    }
+
     func transform_interface_type(_ cursor: TreeCursor, _ parent: AST?) -> goast_interface_type? {
         self.enter_interface_type()
         let node = goast_interface_type(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
@@ -1974,6 +2086,20 @@ extension GoParser {
             _ = cursor.gotoParent()
         }
         self.leave_keyed_element(node)
+        return node
+    }
+
+    func transform_label_name(_ cursor: TreeCursor, _ parent: AST?) -> goast_label_name? {
+        self.enter_label_name()
+        let node = goast_label_name(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_label_name(node)
         return node
     }
 
@@ -2220,6 +2346,20 @@ extension GoParser {
         return node
     }
 
+    func transform_nil(_ cursor: TreeCursor, _ parent: AST?) -> goast_nil? {
+        self.enter_nil()
+        let node = goast_nil(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_nil(node)
+        return node
+    }
+
     func transform_package_clause(_ cursor: TreeCursor, _ parent: AST?) -> goast_package_clause? {
         self.enter_package_clause()
         let node = goast_package_clause(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
@@ -2242,6 +2382,20 @@ extension GoParser {
             _ = cursor.gotoParent()
         }
         self.leave_package_clause(node)
+        return node
+    }
+
+    func transform_package_identifier(_ cursor: TreeCursor, _ parent: AST?) -> goast_package_identifier? {
+        self.enter_package_identifier()
+        let node = goast_package_identifier(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_package_identifier(node)
         return node
     }
 
@@ -2466,6 +2620,20 @@ extension GoParser {
         return node
     }
 
+    func transform_raw_string_literal(_ cursor: TreeCursor, _ parent: AST?) -> goast_raw_string_literal? {
+        self.enter_raw_string_literal()
+        let node = goast_raw_string_literal(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_raw_string_literal(node)
+        return node
+    }
+
     func transform_receive_statement(_ cursor: TreeCursor, _ parent: AST?) -> goast_receive_statement? {
         self.enter_receive_statement()
         let node = goast_receive_statement(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
@@ -2523,6 +2691,20 @@ extension GoParser {
             _ = cursor.gotoParent()
         }
         self.leave_return_statement(node)
+        return node
+    }
+
+    func transform_rune_literal(_ cursor: TreeCursor, _ parent: AST?) -> goast_rune_literal? {
+        self.enter_rune_literal()
+        let node = goast_rune_literal(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_rune_literal(node)
         return node
     }
 
@@ -2813,6 +2995,20 @@ extension GoParser {
         return node
     }
 
+    func transform_true(_ cursor: TreeCursor, _ parent: AST?) -> goast_true? {
+        self.enter_true()
+        let node = goast_true(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_true(node)
+        return node
+    }
+
     func transform_type_alias(_ cursor: TreeCursor, _ parent: AST?) -> goast_type_alias? {
         self.enter_type_alias()
         let node = goast_type_alias(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
@@ -2996,6 +3192,20 @@ extension GoParser {
             _ = cursor.gotoParent()
         }
         self.leave_type_declaration(node)
+        return node
+    }
+
+    func transform_type_identifier(_ cursor: TreeCursor, _ parent: AST?) -> goast_type_identifier? {
+        self.enter_type_identifier()
+        let node = goast_type_identifier(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_type_identifier(node)
         return node
     }
 
@@ -3251,216 +3461,6 @@ extension GoParser {
             _ = cursor.gotoParent()
         }
         self.leave_variadic_parameter_declaration(node)
-        return node
-    }
-
-    func transform_blank_identifier(_ cursor: TreeCursor, _ parent: AST?) -> goast_blank_identifier? {
-        self.enter_blank_identifier()
-        let node = goast_blank_identifier(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_blank_identifier(node)
-        return node
-    }
-
-    func transform_escape_sequence(_ cursor: TreeCursor, _ parent: AST?) -> goast_escape_sequence? {
-        self.enter_escape_sequence()
-        let node = goast_escape_sequence(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_escape_sequence(node)
-        return node
-    }
-
-    func transform_false(_ cursor: TreeCursor, _ parent: AST?) -> goast_false? {
-        self.enter_false()
-        let node = goast_false(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_false(node)
-        return node
-    }
-
-    func transform_field_identifier(_ cursor: TreeCursor, _ parent: AST?) -> goast_field_identifier? {
-        self.enter_field_identifier()
-        let node = goast_field_identifier(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_field_identifier(node)
-        return node
-    }
-
-    func transform_float_literal(_ cursor: TreeCursor, _ parent: AST?) -> goast_float_literal? {
-        self.enter_float_literal()
-        let node = goast_float_literal(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_float_literal(node)
-        return node
-    }
-
-    func transform_identifier(_ cursor: TreeCursor, _ parent: AST?) -> goast_identifier? {
-        self.enter_identifier()
-        let node = goast_identifier(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_identifier(node)
-        return node
-    }
-
-    func transform_imaginary_literal(_ cursor: TreeCursor, _ parent: AST?) -> goast_imaginary_literal? {
-        self.enter_imaginary_literal()
-        let node = goast_imaginary_literal(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_imaginary_literal(node)
-        return node
-    }
-
-    func transform_int_literal(_ cursor: TreeCursor, _ parent: AST?) -> goast_int_literal? {
-        self.enter_int_literal()
-        let node = goast_int_literal(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_int_literal(node)
-        return node
-    }
-
-    func transform_label_name(_ cursor: TreeCursor, _ parent: AST?) -> goast_label_name? {
-        self.enter_label_name()
-        let node = goast_label_name(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_label_name(node)
-        return node
-    }
-
-    func transform_nil(_ cursor: TreeCursor, _ parent: AST?) -> goast_nil? {
-        self.enter_nil()
-        let node = goast_nil(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_nil(node)
-        return node
-    }
-
-    func transform_package_identifier(_ cursor: TreeCursor, _ parent: AST?) -> goast_package_identifier? {
-        self.enter_package_identifier()
-        let node = goast_package_identifier(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_package_identifier(node)
-        return node
-    }
-
-    func transform_raw_string_literal(_ cursor: TreeCursor, _ parent: AST?) -> goast_raw_string_literal? {
-        self.enter_raw_string_literal()
-        let node = goast_raw_string_literal(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_raw_string_literal(node)
-        return node
-    }
-
-    func transform_rune_literal(_ cursor: TreeCursor, _ parent: AST?) -> goast_rune_literal? {
-        self.enter_rune_literal()
-        let node = goast_rune_literal(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_rune_literal(node)
-        return node
-    }
-
-    func transform_true(_ cursor: TreeCursor, _ parent: AST?) -> goast_true? {
-        self.enter_true()
-        let node = goast_true(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_true(node)
-        return node
-    }
-
-    func transform_type_identifier(_ cursor: TreeCursor, _ parent: AST?) -> goast_type_identifier? {
-        self.enter_type_identifier()
-        let node = goast_type_identifier(pos: Star.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
-        if cursor.gotoFirstChild() {
-            repeat {
-                if self.handle_common(node, cursor) { continue }
-
-            } while cursor.gotoNextSibling()
-            _ = cursor.gotoParent()
-        }
-        self.leave_type_identifier(node)
         return node
     }
 

@@ -1,4 +1,4 @@
-// This file is auto-generated from ts2st_GoAST_20201211082351
+// This file is auto-generated from ts2st_GoAST_20201212142254
 
 import Foundation
 import Star
@@ -109,6 +109,9 @@ class goast_binary_expression: goast__expression {
     var right: goast__expression? = nil
 }
 
+class goast_blank_identifier: GoAST {
+}
+
 class goast_block: goast__statement {
     var children: [goast__statement] = []
 }
@@ -175,6 +178,9 @@ class goast_element: GoAST {
 class goast_empty_statement: goast__statement {
 }
 
+class goast_escape_sequence: GoAST {
+}
+
 class goast_expression_case: GoAST {
     var value: goast_expression_list? = nil
     var children: [goast__statement] = []
@@ -194,6 +200,9 @@ class goast_expression_switch_statement: goast__statement {
 class goast_fallthrough_statement: goast__statement {
 }
 
+class goast_false: goast__expression {
+}
+
 class goast_field_declaration: GoAST {
     var name: [goast_field_identifier] = []
     // subtypes:  interpreted_string_literal raw_string_literal
@@ -204,6 +213,12 @@ class goast_field_declaration: GoAST {
 
 class goast_field_declaration_list: GoAST {
     var children: [goast_field_declaration] = []
+}
+
+class goast_field_identifier: GoAST {
+}
+
+class goast_float_literal: goast__expression {
 }
 
 class goast_for_clause: GoAST {
@@ -247,12 +262,18 @@ class goast_goto_statement: goast__statement {
     var children: goast_label_name? = nil
 }
 
+class goast_identifier: goast__expression {
+}
+
 class goast_if_statement: goast__statement {
     // subtypes:  block if_statement
     var alternative: GoAST? = nil
     var condition: goast__expression? = nil
     var consequence: goast_block? = nil
     var initializer: goast__simple_statement? = nil
+}
+
+class goast_imaginary_literal: goast__expression {
 }
 
 class goast_implicit_length_array_type: GoAST {
@@ -284,6 +305,9 @@ class goast_index_expression: goast__expression {
     var operand: goast__expression? = nil
 }
 
+class goast_int_literal: goast__expression {
+}
+
 class goast_interface_type: goast__simple_type {
     var children: goast_method_spec_list? = nil
 }
@@ -295,6 +319,9 @@ class goast_interpreted_string_literal: goast__expression {
 class goast_keyed_element: GoAST {
     // subtypes:  _expression field_identifier literal_value
     var children: [GoAST] = []
+}
+
+class goast_label_name: GoAST {
 }
 
 class goast_labeled_statement: goast__statement {
@@ -333,8 +360,14 @@ class goast_method_spec_list: GoAST {
     var children: [GoAST] = []
 }
 
+class goast_nil: goast__expression {
+}
+
 class goast_package_clause: GoAST {
     var children: goast_package_identifier? = nil
+}
+
+class goast_package_identifier: GoAST {
 }
 
 class goast_parameter_declaration: GoAST {
@@ -369,6 +402,9 @@ class goast_range_clause: GoAST {
     var right: goast__expression? = nil
 }
 
+class goast_raw_string_literal: goast__expression {
+}
+
 class goast_receive_statement: GoAST {
     var left: goast_expression_list? = nil
     var right: goast__expression? = nil
@@ -376,6 +412,9 @@ class goast_receive_statement: GoAST {
 
 class goast_return_statement: goast__statement {
     var children: goast_expression_list? = nil
+}
+
+class goast_rune_literal: goast__expression {
 }
 
 class goast_select_statement: goast__statement {
@@ -418,6 +457,9 @@ class goast_struct_type: goast__simple_type {
     var children: goast_field_declaration_list? = nil
 }
 
+class goast_true: goast__expression {
+}
+
 class goast_type_alias: GoAST {
     var name: goast_type_identifier? = nil
     var type: goast__type? = nil
@@ -441,6 +483,9 @@ class goast_type_conversion_expression: goast__expression {
 class goast_type_declaration: goast__statement {
     // subtypes:  type_alias type_spec
     var children: [GoAST] = []
+}
+
+class goast_type_identifier: goast__simple_type {
 }
 
 class goast_type_spec: GoAST {
@@ -477,49 +522,4 @@ class goast_variadic_argument: GoAST {
 class goast_variadic_parameter_declaration: GoAST {
     var name: goast_identifier? = nil
     var type: goast__type? = nil
-}
-
-class goast_blank_identifier: GoAST {
-}
-
-class goast_escape_sequence: GoAST {
-}
-
-class goast_false: goast__expression {
-}
-
-class goast_field_identifier: GoAST {
-}
-
-class goast_float_literal: goast__expression {
-}
-
-class goast_identifier: goast__expression {
-}
-
-class goast_imaginary_literal: goast__expression {
-}
-
-class goast_int_literal: goast__expression {
-}
-
-class goast_label_name: GoAST {
-}
-
-class goast_nil: goast__expression {
-}
-
-class goast_package_identifier: GoAST {
-}
-
-class goast_raw_string_literal: goast__expression {
-}
-
-class goast_rune_literal: goast__expression {
-}
-
-class goast_true: goast__expression {
-}
-
-class goast_type_identifier: goast__simple_type {
 }
