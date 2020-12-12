@@ -1,13 +1,13 @@
-// This file is auto-generated from ts2st_GoAST_20201212142254
+// This file is auto-generated from ts2st_GoAST_20201212144535
 
 import Foundation
-import Star
+import Common
 
-class GoAST: Star.AST {
+class GoAST: Common.AST {
     var errors: [GoAST] = []
     var comments: [goast_comment] = []
 
-    override init(pos: Star.Position, parent: AST? = nil) {
+    override init(pos: Common.Position, parent: AST? = nil) {
         super.init(pos: pos, parent: parent)
     }
 }

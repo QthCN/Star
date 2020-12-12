@@ -8,7 +8,7 @@ let package = Package(
     products: [
         .library(
             name: "Star",
-            targets: ["Star", "Go"]),
+            targets: ["Semantic"]),
     ],
     dependencies: [
         .package(name: "swift-tree-sitter",  url: "../swift-tree-sitter", .branch("main"))
@@ -16,22 +16,25 @@ let package = Package(
     targets: [
         // Star 包含各种公共类、基类
         .target(
-            name: "Star",
+            name: "Common",
             dependencies: [
                 .product(name: "SwiftTreeSitter", package: "swift-tree-sitter"),
             ],
-            path: "Sources/Star"),
+            path: "Sources/Common"),
         // Go Go语言相关的源码
         .target(
             name: "Go",
             dependencies: [
-                "Star"
+                "Common"
             ],
             path: "Sources/Go"),
-        .testTarget(
-            name: "StarTests",
-            dependencies: ["Star"],
-            path: "Tests/StarTests"),
+        // Semantic为对外输出的Module
+        .target(
+            name: "Semantic",
+            dependencies: [
+                "Common", "Go"
+            ],
+            path: "Sources/Semantic"),
         .testTarget(
             name: "GoTests",
             dependencies: ["Go"],

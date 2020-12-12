@@ -6,27 +6,27 @@
 //
 
 import Foundation
-import Star
+import Common
 import SwiftTreeSitter
 import TreeSitterLanguages
 
 
-class GoParser: Star.Parser {
+public class GoParser: Common.Parser {
     
     private var tsParser = Parser()
     
-    init() {
+    public init() {
         let lang_go = Language(tree_sitter_go())
         tsParser.setLanguage(lang_go)
     }
     
-    func parse(content: String) -> Star.CompilationUnion {
+    public func parse(content: String) -> Common.CompilationUnion {
         if let tree = self.tsParser.parse(text: content.utf8) {
             if let ast = self.transform(tree) {
-                return Star.CompilationUnion(ast: ast, content: content)
+                return Common.CompilationUnion(ast: ast, content: content)
             }
         }
-        return Star.CompilationUnion(content: content)
+        return Common.CompilationUnion(content: content)
     }
     
     

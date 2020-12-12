@@ -1,7 +1,7 @@
-// This file is auto-generated from ts2st_GoAST_20201212142254
+// This file is auto-generated from ts2st_GoAST_20201212144535
 
 import Foundation
-import Star
+import Common
 
 extension GoParser {
 

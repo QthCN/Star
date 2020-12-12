@@ -17,4 +17,8 @@ public class CompilationUnion {
         self.ast = nil
         self.content = content
     }
+    
+    public func inError() -> Bool {
+        return self.ast == nil
+    }
 }
