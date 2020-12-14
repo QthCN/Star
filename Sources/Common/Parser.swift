@@ -21,4 +21,8 @@ public class CompilationUnion {
     public func inError() -> Bool {
         return self.ast == nil
     }
+    
+    public func getAST() -> AST? {
+        return self.ast
+    }
 }
