@@ -1,0 +1,73 @@
+//
+//  File.swift
+//  
+//
+//  Created by 秦天欢 on 2020/12/15.
+//
+
+import Foundation
+import Common
+
+let ignoreDirs = ["vender", "node_modules", ".git"]
+
+public class GoAnalyzer: Analyzer {
+    var fs: FileSystem! = nil
+    var config: Configuration = Configuration()
+    var parser: GoParser = GoParser()
+    
+    /// 分析结果
+    // package列表 key为路径
+    var packages: [String:GoPackage] = [:]
+    // 有效的go文件个数
+    var goFileCount: Int = 0
+    
+    // 清理分析结果
+    func reset() {
+        self.packages = [:]
+        self.goFileCount = 0
+    }
+    
+    public init() {}
+    
+    public func analysis(fs: FileSystem, config: Configuration) {
+        self.fs = fs
+        self.config = config
+        self.reset()
+        self.analysis()
+    }
+    
+    func isGoProject() -> Bool {
+        // 搜索两层目录看是否有go结尾的文件，有的话就认为是go的项目
+        let topDirItems = self.fs.listItems(path: FileSystemObject())
+        for topDirItem in topDirItems {
+            if !topDirItem.dir() && topDirItem.objName().hasSuffix(".go") {
+                return true
+            }
+            
+            if topDirItem.dir() {
+                let subDirItems = self.fs.listItems(path: topDirItem)
+                for subDirItem in subDirItems {
+                    if !subDirItem.dir() && subDirItem.objName().hasSuffix(".go") {
+                        return true
+                    }
+                }
+            }
+        }
+        
+        return false
+    }
+    
+    func analysis() {
+        // 判断是否是一个go的项目
+        if !self.isGoProject() {
+            return
+        }
+        
+        // 生成package信息
+        self.analysisPackages()
+    }
+    
+    func analysisPackages() {
+        // 遍历目录
+    }
+}
