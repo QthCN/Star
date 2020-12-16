@@ -18,13 +18,10 @@ public class GoAnalyzer: Analyzer {
     /// 分析结果
     // package列表 key为路径
     var packages: [String:GoPackage] = [:]
-    // 有效的go文件个数
-    var goFileCount: Int = 0
     
     // 清理分析结果
     func reset() {
         self.packages = [:]
-        self.goFileCount = 0
     }
     
     public init() {}
@@ -64,10 +61,59 @@ public class GoAnalyzer: Analyzer {
         }
         
         // 生成package信息
-        self.analysisPackages()
+        self.analysisPackages(FileSystemObject())
     }
     
-    func analysisPackages() {
-        // 遍历目录
+    func analysisPackages(_ dir: FileSystemObject) {
+        guard dir.dir() else {
+            return
+        }
+        
+        guard !ignoreDirs.contains(dir.objName()) else {
+            return
+        }
+        
+        print("analysis \(dir.rpath())")
+        let package = GoPackage()
+        // 分析这个package
+        self.analysisPackage(dir, package)
+        
+        
+        // 判断package是否有效
+        if package.valid() {
+            self.packages[dir.rpath()] = package
+        }
+        
+        // 分析子目录中的package
+        let subDirItems = self.fs.listItems(path: dir)
+        for subDirItem in subDirItems {
+            self.analysisPackages(subDirItem)
+        }
+        
+    }
+    
+    func analysisPackage(_ directory: FileSystemObject, _ package: GoPackage) {
+        let dirItems = self.fs.listItems(path: directory)
+        
+        for dirItem in dirItems {
+            if dirItem.dir() || !dirItem.objName().hasSuffix(".go") {
+                continue
+            }
+            
+            if let content = self.fs.getFileContent(item: dirItem) {
+                let cu = self.parser.parse(content: content)
+                if cu.getAST() != nil {
+                    package.addFile(name: dirItem.objName(), cu: cu)
+                    
+                    if package.name == "" {
+                        if let package_identifier = cu.getAST()?.find(t: goast_package_identifier.self) {
+                            package.setName(name: cu.codes(pos: package_identifier.pos))
+                        }
+                        print(package.name)
+                    }
+                }
+            }
+            
+        }
     }
 }

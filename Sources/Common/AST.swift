@@ -8,16 +8,30 @@
 import Foundation
 
 open class AST {
-    let pos: Position
+    public let pos: Position
     weak var parent: AST?
+    var children_nodes: [AST] = []
     
     public init(pos: Position, parent: AST? = nil) {
         self.pos = pos
         self.parent = parent
+        parent?.children_nodes.append(self)
+    }
+    
+    public func find<T> (t: T) -> AST? {
+        if type(of: self) is T {
+            return self
+        }
+        for child in self.children_nodes {
+            if let node = child.find(t: t) {
+                return node
+            }
+        }
+        return nil
     }
 }
 
-open class Position {
+open class Position: CustomStringConvertible {
     let startLine: Int
     let startCol: Int
     let endLine: Int
@@ -32,5 +46,9 @@ open class Position {
         self.endCol = endCol
         self.startBytes = startBytes
         self.endBytes = endBytes
+    }
+    
+    public var description: String {
+        return "\(startLine):\(startCol) \(endLine):\(endCol) \(startBytes):\(endBytes)"
     }
 }

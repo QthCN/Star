@@ -25,4 +25,10 @@ public class CompilationUnion {
     public func getAST() -> AST? {
         return self.ast
     }
+    
+    public func codes(pos: Position) -> String {
+        let startIndex = self.content.index(self.content.startIndex, offsetBy: pos.startBytes)
+        let endIndex = self.content.index(self.content.startIndex, offsetBy: pos.endBytes)
+        return String(self.content[startIndex..<endIndex])
+    }
 }

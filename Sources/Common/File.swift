@@ -42,6 +42,10 @@ public class FileSystemObject {
     public func objName() -> String {
         return self.name
     }
+    
+    public func objPath() -> String {
+        return self.path
+    }
 }
 
 public protocol FileSystem {
@@ -86,7 +90,6 @@ public class MacFileSystem: FileSystem {
     public func listItems(path: FileSystemObject) -> [FileSystemObject] {
         let fullPath = "\(self.rootItem.name)/\(path.rpath())"
         let fm = FileManager.default
-        print(fullPath)
         do {
             var records: [FileSystemObject] = []
             let items = try fm.contentsOfDirectory(atPath: fullPath)

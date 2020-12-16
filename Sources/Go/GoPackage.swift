@@ -6,14 +6,26 @@
 //
 
 import Foundation
+import Common
 
 class GoPackage {
-    let path: String
-    let name: String
-    var imports: [GoPackage] = []
+    var path: String = ""
+    var name: String = ""
+    var files: [String:CompilationUnion] = [:]
     
-    init(path: String, name: String) {
-        self.path = path
+    init() {
+    }
+    
+    func valid() -> Bool {
+        // 判断是否为一个valid的pacakge，一个valid的package需要包含有效的go文件
+        return true
+    }
+    
+    func addFile(name: String, cu: CompilationUnion) {
+        self.files[name] = cu
+    }
+    
+    func setName(name: String) {
         self.name = name
     }
 }
