@@ -55,6 +55,9 @@ final class GoParserTests: XCTestCase {
         }
         let ast = parser.parse(content: code)
         print(ast)
+        
+        let visiter = GoDeclVisiter(parser: parser)
+        visiter.visit_ast(ast.getAST()! as! GoAST)
     }
     
 }

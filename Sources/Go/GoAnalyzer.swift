@@ -73,7 +73,6 @@ public class GoAnalyzer: Analyzer {
             return
         }
         
-        print("analysis \(dir.rpath())")
         let package = GoPackage()
         // 分析这个package
         self.analysisPackage(dir, package)
@@ -95,6 +94,8 @@ public class GoAnalyzer: Analyzer {
     func analysisPackage(_ directory: FileSystemObject, _ package: GoPackage) {
         let dirItems = self.fs.listItems(path: directory)
         
+        // 设置同一个package下的parser共用同一个scope
+        self.parser.scope = package.scope
         for dirItem in dirItems {
             if dirItem.dir() || !dirItem.objName().hasSuffix(".go") {
                 continue
@@ -109,11 +110,53 @@ public class GoAnalyzer: Analyzer {
                         if let package_identifier = cu.getAST()?.find(t: goast_package_identifier.self) {
                             package.setName(name: cu.codes(pos: package_identifier.pos))
                         }
-                        print(package.name)
                     }
                 }
             }
             
+        }
+    }
+}
+
+
+class GoDeclVisiter: GoVisiter {
+    let parser: GoParser
+    
+    init(parser: GoParser) {
+        self.parser = parser
+        super.init()
+    }
+    
+    override func visit_function_declaration(_ node: goast_function_declaration) {
+        print("goast_function_declaration !!!")
+        if let ast = node.body {
+            self.visit_block(ast)
+        }
+        if let ast = node.name {
+            self.visit_identifier(ast)
+        }
+        if let ast = node.parameters {
+            self.visit_parameter_list(ast)
+        }
+        if let ast = node.result {
+            self.visit_ast(ast)
+        }
+
+        if self.handleError {
+            for node in node.errors {
+                self.visit_ast(node)
+            }
+        }
+    }
+    
+    override func visit_identifier(_ node: goast_identifier) {
+        print("identifier \(self.parser)")
+        print(self.parser.codes(node: node))
+
+        if self.handleError {
+            for node in node.errors {
+                self.visit_ast(node)
+            }
         }
     }
 }

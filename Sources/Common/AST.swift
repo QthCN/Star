@@ -32,12 +32,12 @@ open class AST {
 }
 
 open class Position: CustomStringConvertible {
-    let startLine: Int
-    let startCol: Int
-    let endLine: Int
-    let endCol: Int
-    let startBytes: Int
-    let endBytes: Int
+    public let startLine: Int
+    public let startCol: Int
+    public let endLine: Int
+    public let endCol: Int
+    public let startBytes: Int
+    public let endBytes: Int
     
     public init(_ startLine: Int, _ startCol: Int, _ endLine: Int, _ endCol: Int, _ startBytes: Int, _ endBytes: Int) {
         self.startLine = startLine
