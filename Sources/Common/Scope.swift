@@ -8,11 +8,13 @@
 import Foundation
 
 public class Scope {
-    let parent: Scope?
-    var children: [Scope] = []
-    var declarations: [String:AST] = [:]
+    public let name: String
+    public let parent: Scope?
+    public var children: [Scope] = []
+    public var declarations: [String:AST] = [:]
     
-    public init(parent: Scope?) {
+    public init(parent: Scope?, name: String) {
+        self.name = name
         self.parent = parent
         self.parent?.children.append(self)
     }

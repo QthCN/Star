@@ -1,6 +1,25 @@
-public protocol Parser {
+import SwiftTreeSitter
+import TreeSitterLanguages
+
+open class Parser {
     
-    func parse(content: String) -> CompilationUnion
+    public var tsParser = SwiftTreeSitter.Parser()
+    public var content: String = ""
+    
+    public init() {
+        
+    }
+    
+    open func parse(content: String) -> CompilationUnion {
+        return CompilationUnion(content: content)
+    }
+    
+    public func codes(node: AST) -> String {
+        let pos = node.pos
+        let startIndex = self.content.index(self.content.startIndex, offsetBy: pos.startBytes)
+        let endIndex = self.content.index(self.content.startIndex, offsetBy: pos.endBytes)
+        return String(self.content[startIndex..<endIndex])
+    }
     
 }
 

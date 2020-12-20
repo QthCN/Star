@@ -89,6 +89,9 @@ public class GoAnalyzer: Analyzer {
             self.analysisPackages(subDirItem)
         }
         
+        // 分析type信息
+        self.analysisTypeInfo()
+        
     }
     
     func analysisPackage(_ directory: FileSystemObject, _ package: GoPackage) {
@@ -111,52 +114,17 @@ public class GoAnalyzer: Analyzer {
                             package.setName(name: cu.codes(pos: package_identifier.pos))
                         }
                     }
+                    
+                    // 对文件进行decl分析
+                    let declVisiter = GoDeclVisiter(cu: cu, pkgScope: package.scope)
+                    declVisiter.visit_ast(cu.getAST()! as! GoAST)
                 }
             }
             
         }
     }
-}
-
-
-class GoDeclVisiter: GoVisiter {
-    let parser: GoParser
     
-    init(parser: GoParser) {
-        self.parser = parser
-        super.init()
-    }
-    
-    override func visit_function_declaration(_ node: goast_function_declaration) {
-        print("goast_function_declaration !!!")
-        if let ast = node.body {
-            self.visit_block(ast)
-        }
-        if let ast = node.name {
-            self.visit_identifier(ast)
-        }
-        if let ast = node.parameters {
-            self.visit_parameter_list(ast)
-        }
-        if let ast = node.result {
-            self.visit_ast(ast)
-        }
-
-        if self.handleError {
-            for node in node.errors {
-                self.visit_ast(node)
-            }
-        }
-    }
-    
-    override func visit_identifier(_ node: goast_identifier) {
-        print("identifier \(self.parser)")
-        print(self.parser.codes(node: node))
-
-        if self.handleError {
-            for node in node.errors {
-                self.visit_ast(node)
-            }
-        }
+    func analysisTypeInfo() {
+        // TODO
     }
 }

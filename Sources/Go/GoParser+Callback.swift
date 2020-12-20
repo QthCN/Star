@@ -1,4 +1,4 @@
-// This file is auto-generated from ts2st_GoAST_20201212144535
+// This file is auto-generated from ts2st_GoAST_20201220144740
 
 import Foundation
 import Common

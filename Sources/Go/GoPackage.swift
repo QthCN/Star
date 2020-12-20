@@ -12,7 +12,7 @@ class GoPackage {
     var path: String = ""
     var name: String = ""
     var files: [String:CompilationUnion] = [:]
-    let scope: Scope = Scope(parent: nil)
+    let scope: Scope = Scope(parent: nil, name: "Package")
     
     init() {
     }

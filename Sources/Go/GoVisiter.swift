@@ -1,4 +1,4 @@
-// This file is auto-generated from ts2st_GoAST_20201217224850
+// This file is auto-generated from ts2st_GoAST_20201220144740
 
 import Foundation
 import Common
@@ -8,6 +8,11 @@ class GoVisiter {
     var handleError: Bool = false
 
     init() {
+    }
+
+    // 所有node都会被调用
+    func visit_node(_ node: GoAST) {
+
     }
 
     func visit_ast(_ node: GoAST) {
@@ -355,6 +360,8 @@ class GoVisiter {
     }
 
     func visit_argument_list(_ node: goast_argument_list) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit_ast(ast)
         }
@@ -367,6 +374,8 @@ class GoVisiter {
     }
 
     func visit_array_type(_ node: goast_array_type) {
+        self.visit_node(node)
+
         if let ast = node.element {
             self.visit__type(ast)
         }
@@ -383,6 +392,8 @@ class GoVisiter {
     }
 
     func visit_assignment_statement(_ node: goast_assignment_statement) {
+        self.visit_node(node)
+
         if let ast = node.left {
             self.visit_expression_list(ast)
         }
@@ -399,6 +410,8 @@ class GoVisiter {
     }
 
     func visit_binary_expression(_ node: goast_binary_expression) {
+        self.visit_node(node)
+
         if let ast = node.left {
             self.visit__expression(ast)
         }
@@ -415,6 +428,8 @@ class GoVisiter {
     }
 
     func visit_blank_identifier(_ node: goast_blank_identifier) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -423,6 +438,8 @@ class GoVisiter {
     }
 
     func visit_block(_ node: goast_block) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit__statement(ast)
         }
@@ -435,6 +452,8 @@ class GoVisiter {
     }
 
     func visit_break_statement(_ node: goast_break_statement) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit_label_name(ast)
         }
@@ -447,6 +466,8 @@ class GoVisiter {
     }
 
     func visit_call_expression(_ node: goast_call_expression) {
+        self.visit_node(node)
+
         if let ast = node.arguments {
             self.visit_argument_list(ast)
         }
@@ -463,6 +484,8 @@ class GoVisiter {
     }
 
     func visit_channel_type(_ node: goast_channel_type) {
+        self.visit_node(node)
+
         if let ast = node.value {
             self.visit__type(ast)
         }
@@ -475,6 +498,8 @@ class GoVisiter {
     }
 
     func visit_communication_case(_ node: goast_communication_case) {
+        self.visit_node(node)
+
         if let ast = node.communication {
             self.visit_ast(ast)
         }
@@ -491,6 +516,8 @@ class GoVisiter {
     }
 
     func visit_composite_literal(_ node: goast_composite_literal) {
+        self.visit_node(node)
+
         if let ast = node.body {
             self.visit_literal_value(ast)
         }
@@ -507,6 +534,8 @@ class GoVisiter {
     }
 
     func visit_const_declaration(_ node: goast_const_declaration) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit_const_spec(ast)
         }
@@ -519,6 +548,8 @@ class GoVisiter {
     }
 
     func visit_const_spec(_ node: goast_const_spec) {
+        self.visit_node(node)
+
         for ast in node.name {
             self.visit_identifier(ast)
         }
@@ -539,6 +570,8 @@ class GoVisiter {
     }
 
     func visit_continue_statement(_ node: goast_continue_statement) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit_label_name(ast)
         }
@@ -551,6 +584,8 @@ class GoVisiter {
     }
 
     func visit_dec_statement(_ node: goast_dec_statement) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit__expression(ast)
         }
@@ -563,6 +598,8 @@ class GoVisiter {
     }
 
     func visit_default_case(_ node: goast_default_case) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit__statement(ast)
         }
@@ -575,6 +612,8 @@ class GoVisiter {
     }
 
     func visit_defer_statement(_ node: goast_defer_statement) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit__expression(ast)
         }
@@ -587,6 +626,8 @@ class GoVisiter {
     }
 
     func visit_dot(_ node: goast_dot) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -595,6 +636,8 @@ class GoVisiter {
     }
 
     func visit_element(_ node: goast_element) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit_ast(ast)
         }
@@ -607,6 +650,8 @@ class GoVisiter {
     }
 
     func visit_empty_statement(_ node: goast_empty_statement) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -615,6 +660,8 @@ class GoVisiter {
     }
 
     func visit_escape_sequence(_ node: goast_escape_sequence) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -623,6 +670,8 @@ class GoVisiter {
     }
 
     func visit_expression_case(_ node: goast_expression_case) {
+        self.visit_node(node)
+
         if let ast = node.value {
             self.visit_expression_list(ast)
         }
@@ -639,6 +688,8 @@ class GoVisiter {
     }
 
     func visit_expression_list(_ node: goast_expression_list) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit__expression(ast)
         }
@@ -651,6 +702,8 @@ class GoVisiter {
     }
 
     func visit_expression_switch_statement(_ node: goast_expression_switch_statement) {
+        self.visit_node(node)
+
         if let ast = node.initializer {
             self.visit__simple_statement(ast)
         }
@@ -671,6 +724,8 @@ class GoVisiter {
     }
 
     func visit_fallthrough_statement(_ node: goast_fallthrough_statement) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -679,6 +734,8 @@ class GoVisiter {
     }
 
     func visit_false(_ node: goast_false) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -687,6 +744,8 @@ class GoVisiter {
     }
 
     func visit_field_declaration(_ node: goast_field_declaration) {
+        self.visit_node(node)
+
         for ast in node.name {
             self.visit_field_identifier(ast)
         }
@@ -707,6 +766,8 @@ class GoVisiter {
     }
 
     func visit_field_declaration_list(_ node: goast_field_declaration_list) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit_field_declaration(ast)
         }
@@ -719,6 +780,8 @@ class GoVisiter {
     }
 
     func visit_field_identifier(_ node: goast_field_identifier) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -727,6 +790,8 @@ class GoVisiter {
     }
 
     func visit_float_literal(_ node: goast_float_literal) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -735,6 +800,8 @@ class GoVisiter {
     }
 
     func visit_for_clause(_ node: goast_for_clause) {
+        self.visit_node(node)
+
         if let ast = node.condition {
             self.visit__expression(ast)
         }
@@ -755,6 +822,8 @@ class GoVisiter {
     }
 
     func visit_for_statement(_ node: goast_for_statement) {
+        self.visit_node(node)
+
         if let ast = node.body {
             self.visit_block(ast)
         }
@@ -771,6 +840,8 @@ class GoVisiter {
     }
 
     func visit_func_literal(_ node: goast_func_literal) {
+        self.visit_node(node)
+
         if let ast = node.body {
             self.visit_block(ast)
         }
@@ -791,6 +862,8 @@ class GoVisiter {
     }
 
     func visit_function_declaration(_ node: goast_function_declaration) {
+        self.visit_node(node)
+
         if let ast = node.body {
             self.visit_block(ast)
         }
@@ -815,6 +888,8 @@ class GoVisiter {
     }
 
     func visit_function_type(_ node: goast_function_type) {
+        self.visit_node(node)
+
         if let ast = node.parameters {
             self.visit_parameter_list(ast)
         }
@@ -831,6 +906,8 @@ class GoVisiter {
     }
 
     func visit_go_statement(_ node: goast_go_statement) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit__expression(ast)
         }
@@ -843,6 +920,8 @@ class GoVisiter {
     }
 
     func visit_goto_statement(_ node: goast_goto_statement) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit_label_name(ast)
         }
@@ -855,6 +934,8 @@ class GoVisiter {
     }
 
     func visit_identifier(_ node: goast_identifier) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -863,6 +944,8 @@ class GoVisiter {
     }
 
     func visit_if_statement(_ node: goast_if_statement) {
+        self.visit_node(node)
+
         if let ast = node.alternative {
             self.visit_ast(ast)
         }
@@ -887,6 +970,8 @@ class GoVisiter {
     }
 
     func visit_imaginary_literal(_ node: goast_imaginary_literal) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -895,6 +980,8 @@ class GoVisiter {
     }
 
     func visit_implicit_length_array_type(_ node: goast_implicit_length_array_type) {
+        self.visit_node(node)
+
         if let ast = node.element {
             self.visit__type(ast)
         }
@@ -907,6 +994,8 @@ class GoVisiter {
     }
 
     func visit_import_declaration(_ node: goast_import_declaration) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit_ast(ast)
         }
@@ -919,6 +1008,8 @@ class GoVisiter {
     }
 
     func visit_import_spec(_ node: goast_import_spec) {
+        self.visit_node(node)
+
         if let ast = node.name {
             self.visit_ast(ast)
         }
@@ -935,6 +1026,8 @@ class GoVisiter {
     }
 
     func visit_import_spec_list(_ node: goast_import_spec_list) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit_import_spec(ast)
         }
@@ -947,6 +1040,8 @@ class GoVisiter {
     }
 
     func visit_inc_statement(_ node: goast_inc_statement) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit__expression(ast)
         }
@@ -959,6 +1054,8 @@ class GoVisiter {
     }
 
     func visit_index_expression(_ node: goast_index_expression) {
+        self.visit_node(node)
+
         if let ast = node.index {
             self.visit__expression(ast)
         }
@@ -975,6 +1072,8 @@ class GoVisiter {
     }
 
     func visit_int_literal(_ node: goast_int_literal) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -983,6 +1082,8 @@ class GoVisiter {
     }
 
     func visit_interface_type(_ node: goast_interface_type) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit_method_spec_list(ast)
         }
@@ -995,6 +1096,8 @@ class GoVisiter {
     }
 
     func visit_interpreted_string_literal(_ node: goast_interpreted_string_literal) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit_escape_sequence(ast)
         }
@@ -1007,6 +1110,8 @@ class GoVisiter {
     }
 
     func visit_keyed_element(_ node: goast_keyed_element) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit_ast(ast)
         }
@@ -1019,6 +1124,8 @@ class GoVisiter {
     }
 
     func visit_label_name(_ node: goast_label_name) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -1027,6 +1134,8 @@ class GoVisiter {
     }
 
     func visit_labeled_statement(_ node: goast_labeled_statement) {
+        self.visit_node(node)
+
         if let ast = node.label {
             self.visit_label_name(ast)
         }
@@ -1043,6 +1152,8 @@ class GoVisiter {
     }
 
     func visit_literal_value(_ node: goast_literal_value) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit_ast(ast)
         }
@@ -1055,6 +1166,8 @@ class GoVisiter {
     }
 
     func visit_map_type(_ node: goast_map_type) {
+        self.visit_node(node)
+
         if let ast = node.key {
             self.visit__type(ast)
         }
@@ -1071,6 +1184,8 @@ class GoVisiter {
     }
 
     func visit_method_declaration(_ node: goast_method_declaration) {
+        self.visit_node(node)
+
         if let ast = node.body {
             self.visit_block(ast)
         }
@@ -1099,6 +1214,8 @@ class GoVisiter {
     }
 
     func visit_method_spec(_ node: goast_method_spec) {
+        self.visit_node(node)
+
         if let ast = node.name {
             self.visit_field_identifier(ast)
         }
@@ -1119,6 +1236,8 @@ class GoVisiter {
     }
 
     func visit_method_spec_list(_ node: goast_method_spec_list) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit_ast(ast)
         }
@@ -1131,6 +1250,8 @@ class GoVisiter {
     }
 
     func visit_nil(_ node: goast_nil) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -1139,6 +1260,8 @@ class GoVisiter {
     }
 
     func visit_package_clause(_ node: goast_package_clause) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit_package_identifier(ast)
         }
@@ -1151,6 +1274,8 @@ class GoVisiter {
     }
 
     func visit_package_identifier(_ node: goast_package_identifier) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -1159,6 +1284,8 @@ class GoVisiter {
     }
 
     func visit_parameter_declaration(_ node: goast_parameter_declaration) {
+        self.visit_node(node)
+
         for ast in node.name {
             self.visit_identifier(ast)
         }
@@ -1175,6 +1302,8 @@ class GoVisiter {
     }
 
     func visit_parameter_list(_ node: goast_parameter_list) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit_ast(ast)
         }
@@ -1187,6 +1316,8 @@ class GoVisiter {
     }
 
     func visit_parenthesized_expression(_ node: goast_parenthesized_expression) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit__expression(ast)
         }
@@ -1199,6 +1330,8 @@ class GoVisiter {
     }
 
     func visit_parenthesized_type(_ node: goast_parenthesized_type) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit__type(ast)
         }
@@ -1211,6 +1344,8 @@ class GoVisiter {
     }
 
     func visit_pointer_type(_ node: goast_pointer_type) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit__type(ast)
         }
@@ -1223,6 +1358,8 @@ class GoVisiter {
     }
 
     func visit_qualified_type(_ node: goast_qualified_type) {
+        self.visit_node(node)
+
         if let ast = node.name {
             self.visit_type_identifier(ast)
         }
@@ -1239,6 +1376,8 @@ class GoVisiter {
     }
 
     func visit_range_clause(_ node: goast_range_clause) {
+        self.visit_node(node)
+
         if let ast = node.left {
             self.visit_expression_list(ast)
         }
@@ -1255,6 +1394,8 @@ class GoVisiter {
     }
 
     func visit_raw_string_literal(_ node: goast_raw_string_literal) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -1263,6 +1404,8 @@ class GoVisiter {
     }
 
     func visit_receive_statement(_ node: goast_receive_statement) {
+        self.visit_node(node)
+
         if let ast = node.left {
             self.visit_expression_list(ast)
         }
@@ -1279,6 +1422,8 @@ class GoVisiter {
     }
 
     func visit_return_statement(_ node: goast_return_statement) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit_expression_list(ast)
         }
@@ -1291,6 +1436,8 @@ class GoVisiter {
     }
 
     func visit_rune_literal(_ node: goast_rune_literal) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -1299,6 +1446,8 @@ class GoVisiter {
     }
 
     func visit_select_statement(_ node: goast_select_statement) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit_ast(ast)
         }
@@ -1311,6 +1460,8 @@ class GoVisiter {
     }
 
     func visit_selector_expression(_ node: goast_selector_expression) {
+        self.visit_node(node)
+
         if let ast = node.field {
             self.visit_field_identifier(ast)
         }
@@ -1327,6 +1478,8 @@ class GoVisiter {
     }
 
     func visit_send_statement(_ node: goast_send_statement) {
+        self.visit_node(node)
+
         if let ast = node.channel {
             self.visit__expression(ast)
         }
@@ -1343,6 +1496,8 @@ class GoVisiter {
     }
 
     func visit_short_var_declaration(_ node: goast_short_var_declaration) {
+        self.visit_node(node)
+
         if let ast = node.left {
             self.visit_expression_list(ast)
         }
@@ -1359,6 +1514,8 @@ class GoVisiter {
     }
 
     func visit_slice_expression(_ node: goast_slice_expression) {
+        self.visit_node(node)
+
         if let ast = node.capacity {
             self.visit__expression(ast)
         }
@@ -1383,6 +1540,8 @@ class GoVisiter {
     }
 
     func visit_slice_type(_ node: goast_slice_type) {
+        self.visit_node(node)
+
         if let ast = node.element {
             self.visit__type(ast)
         }
@@ -1395,6 +1554,8 @@ class GoVisiter {
     }
 
     func visit_source_file(_ node: goast_source_file) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit_ast(ast)
         }
@@ -1407,6 +1568,8 @@ class GoVisiter {
     }
 
     func visit_struct_type(_ node: goast_struct_type) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit_field_declaration_list(ast)
         }
@@ -1419,6 +1582,8 @@ class GoVisiter {
     }
 
     func visit_true(_ node: goast_true) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -1427,6 +1592,8 @@ class GoVisiter {
     }
 
     func visit_type_alias(_ node: goast_type_alias) {
+        self.visit_node(node)
+
         if let ast = node.name {
             self.visit_type_identifier(ast)
         }
@@ -1443,6 +1610,8 @@ class GoVisiter {
     }
 
     func visit_type_assertion_expression(_ node: goast_type_assertion_expression) {
+        self.visit_node(node)
+
         if let ast = node.operand {
             self.visit__expression(ast)
         }
@@ -1459,6 +1628,8 @@ class GoVisiter {
     }
 
     func visit_type_case(_ node: goast_type_case) {
+        self.visit_node(node)
+
         for ast in node.type {
             self.visit__type(ast)
         }
@@ -1475,6 +1646,8 @@ class GoVisiter {
     }
 
     func visit_type_conversion_expression(_ node: goast_type_conversion_expression) {
+        self.visit_node(node)
+
         if let ast = node.operand {
             self.visit__expression(ast)
         }
@@ -1491,6 +1664,8 @@ class GoVisiter {
     }
 
     func visit_type_declaration(_ node: goast_type_declaration) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit_ast(ast)
         }
@@ -1503,6 +1678,8 @@ class GoVisiter {
     }
 
     func visit_type_identifier(_ node: goast_type_identifier) {
+        self.visit_node(node)
+
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -1511,6 +1688,8 @@ class GoVisiter {
     }
 
     func visit_type_spec(_ node: goast_type_spec) {
+        self.visit_node(node)
+
         if let ast = node.name {
             self.visit_type_identifier(ast)
         }
@@ -1527,6 +1706,8 @@ class GoVisiter {
     }
 
     func visit_type_switch_statement(_ node: goast_type_switch_statement) {
+        self.visit_node(node)
+
         if let ast = node.alias {
             self.visit_expression_list(ast)
         }
@@ -1551,6 +1732,8 @@ class GoVisiter {
     }
 
     func visit_unary_expression(_ node: goast_unary_expression) {
+        self.visit_node(node)
+
         if let ast = node.operand {
             self.visit__expression(ast)
         }
@@ -1563,6 +1746,8 @@ class GoVisiter {
     }
 
     func visit_var_declaration(_ node: goast_var_declaration) {
+        self.visit_node(node)
+
         for ast in node.children {
             self.visit_var_spec(ast)
         }
@@ -1575,6 +1760,8 @@ class GoVisiter {
     }
 
     func visit_var_spec(_ node: goast_var_spec) {
+        self.visit_node(node)
+
         for ast in node.name {
             self.visit_identifier(ast)
         }
@@ -1595,6 +1782,8 @@ class GoVisiter {
     }
 
     func visit_variadic_argument(_ node: goast_variadic_argument) {
+        self.visit_node(node)
+
         if let ast = node.children {
             self.visit__expression(ast)
         }
@@ -1607,6 +1796,8 @@ class GoVisiter {
     }
 
     func visit_variadic_parameter_declaration(_ node: goast_variadic_parameter_declaration) {
+        self.visit_node(node)
+
         if let ast = node.name {
             self.visit_identifier(ast)
         }
