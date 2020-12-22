@@ -375,13 +375,13 @@ class GoVisiter {
 
     func visit_array_type(_ node: goast_array_type) {
         self.visit_node(node)
+        
+        if let ast = node.length {
+            self.visit__expression(ast)
+        }
 
         if let ast = node.element {
             self.visit__type(ast)
-        }
-
-        if let ast = node.length {
-            self.visit__expression(ast)
         }
 
         if self.handleError {
@@ -393,12 +393,12 @@ class GoVisiter {
 
     func visit_assignment_statement(_ node: goast_assignment_statement) {
         self.visit_node(node)
-
-        if let ast = node.left {
+        
+        if let ast = node.right {
             self.visit_expression_list(ast)
         }
 
-        if let ast = node.right {
+        if let ast = node.left {
             self.visit_expression_list(ast)
         }
 
@@ -411,12 +411,12 @@ class GoVisiter {
 
     func visit_binary_expression(_ node: goast_binary_expression) {
         self.visit_node(node)
-
-        if let ast = node.left {
+        
+        if let ast = node.right {
             self.visit__expression(ast)
         }
 
-        if let ast = node.right {
+        if let ast = node.left {
             self.visit__expression(ast)
         }
 
@@ -467,13 +467,13 @@ class GoVisiter {
 
     func visit_call_expression(_ node: goast_call_expression) {
         self.visit_node(node)
+        
+        if let ast = node.function {
+            self.visit__expression(ast)
+        }
 
         if let ast = node.arguments {
             self.visit_argument_list(ast)
-        }
-
-        if let ast = node.function {
-            self.visit__expression(ast)
         }
 
         if self.handleError {
@@ -517,13 +517,13 @@ class GoVisiter {
 
     func visit_composite_literal(_ node: goast_composite_literal) {
         self.visit_node(node)
+        
+        if let ast = node.type {
+            self.visit_ast(ast)
+        }
 
         if let ast = node.body {
             self.visit_literal_value(ast)
-        }
-
-        if let ast = node.type {
-            self.visit_ast(ast)
         }
 
         if self.handleError {
@@ -549,6 +549,10 @@ class GoVisiter {
 
     func visit_const_spec(_ node: goast_const_spec) {
         self.visit_node(node)
+        
+        if let ast = node.value {
+            self.visit_expression_list(ast)
+        }
 
         for ast in node.name {
             self.visit_identifier(ast)
@@ -556,10 +560,6 @@ class GoVisiter {
 
         if let ast = node.type {
             self.visit__type(ast)
-        }
-
-        if let ast = node.value {
-            self.visit_expression_list(ast)
         }
 
         if self.handleError {
@@ -750,11 +750,11 @@ class GoVisiter {
             self.visit_field_identifier(ast)
         }
 
-        if let ast = node.tag {
+        if let ast = node.type {
             self.visit_ast(ast)
         }
-
-        if let ast = node.type {
+        
+        if let ast = node.tag {
             self.visit_ast(ast)
         }
 
@@ -801,13 +801,13 @@ class GoVisiter {
 
     func visit_for_clause(_ node: goast_for_clause) {
         self.visit_node(node)
+        
+        if let ast = node.initializer {
+            self.visit__simple_statement(ast)
+        }
 
         if let ast = node.condition {
             self.visit__expression(ast)
-        }
-
-        if let ast = node.initializer {
-            self.visit__simple_statement(ast)
         }
 
         if let ast = node.update {
@@ -823,13 +823,13 @@ class GoVisiter {
 
     func visit_for_statement(_ node: goast_for_statement) {
         self.visit_node(node)
+        
+        if let ast = node.children {
+            self.visit_ast(ast)
+        }
 
         if let ast = node.body {
             self.visit_block(ast)
-        }
-
-        if let ast = node.children {
-            self.visit_ast(ast)
         }
 
         if self.handleError {
@@ -841,17 +841,17 @@ class GoVisiter {
 
     func visit_func_literal(_ node: goast_func_literal) {
         self.visit_node(node)
-
-        if let ast = node.body {
-            self.visit_block(ast)
-        }
-
+        
         if let ast = node.parameters {
             self.visit_parameter_list(ast)
         }
 
         if let ast = node.result {
             self.visit_ast(ast)
+        }
+
+        if let ast = node.body {
+            self.visit_block(ast)
         }
 
         if self.handleError {
@@ -864,10 +864,6 @@ class GoVisiter {
     func visit_function_declaration(_ node: goast_function_declaration) {
         self.visit_node(node)
 
-        if let ast = node.body {
-            self.visit_block(ast)
-        }
-
         if let ast = node.name {
             self.visit_identifier(ast)
         }
@@ -878,6 +874,10 @@ class GoVisiter {
 
         if let ast = node.result {
             self.visit_ast(ast)
+        }
+        
+        if let ast = node.body {
+            self.visit_block(ast)
         }
 
         if self.handleError {
@@ -945,9 +945,9 @@ class GoVisiter {
 
     func visit_if_statement(_ node: goast_if_statement) {
         self.visit_node(node)
-
-        if let ast = node.alternative {
-            self.visit_ast(ast)
+        
+        if let ast = node.initializer {
+            self.visit__simple_statement(ast)
         }
 
         if let ast = node.condition {
@@ -957,9 +957,9 @@ class GoVisiter {
         if let ast = node.consequence {
             self.visit_block(ast)
         }
-
-        if let ast = node.initializer {
-            self.visit__simple_statement(ast)
+        
+        if let ast = node.alternative {
+            self.visit_ast(ast)
         }
 
         if self.handleError {
@@ -1185,9 +1185,9 @@ class GoVisiter {
 
     func visit_method_declaration(_ node: goast_method_declaration) {
         self.visit_node(node)
-
-        if let ast = node.body {
-            self.visit_block(ast)
+        
+        if let ast = node.receiver {
+            self.visit_parameter_list(ast)
         }
 
         if let ast = node.name {
@@ -1198,12 +1198,12 @@ class GoVisiter {
             self.visit_parameter_list(ast)
         }
 
-        if let ast = node.receiver {
-            self.visit_parameter_list(ast)
-        }
-
         if let ast = node.result {
             self.visit_ast(ast)
+        }
+        
+        if let ast = node.body {
+            self.visit_block(ast)
         }
 
         if self.handleError {
@@ -1359,13 +1359,13 @@ class GoVisiter {
 
     func visit_qualified_type(_ node: goast_qualified_type) {
         self.visit_node(node)
+        
+        if let ast = node.package {
+            self.visit_package_identifier(ast)
+        }
 
         if let ast = node.name {
             self.visit_type_identifier(ast)
-        }
-
-        if let ast = node.package {
-            self.visit_package_identifier(ast)
         }
 
         if self.handleError {
@@ -1377,13 +1377,13 @@ class GoVisiter {
 
     func visit_range_clause(_ node: goast_range_clause) {
         self.visit_node(node)
+        
+        if let ast = node.right {
+            self.visit__expression(ast)
+        }
 
         if let ast = node.left {
             self.visit_expression_list(ast)
-        }
-
-        if let ast = node.right {
-            self.visit__expression(ast)
         }
 
         if self.handleError {
@@ -1405,13 +1405,13 @@ class GoVisiter {
 
     func visit_receive_statement(_ node: goast_receive_statement) {
         self.visit_node(node)
+        
+        if let ast = node.right {
+            self.visit__expression(ast)
+        }
 
         if let ast = node.left {
             self.visit_expression_list(ast)
-        }
-
-        if let ast = node.right {
-            self.visit__expression(ast)
         }
 
         if self.handleError {
@@ -1461,15 +1461,15 @@ class GoVisiter {
 
     func visit_selector_expression(_ node: goast_selector_expression) {
         self.visit_node(node)
-
-        if let ast = node.field {
-            self.visit_field_identifier(ast)
-        }
-
+        
         if let ast = node.operand {
             self.visit__expression(ast)
         }
 
+        if let ast = node.field {
+            self.visit_field_identifier(ast)
+        }
+        
         if self.handleError {
             for node in node.errors {
                 self.visit_ast(node)
@@ -1479,12 +1479,12 @@ class GoVisiter {
 
     func visit_send_statement(_ node: goast_send_statement) {
         self.visit_node(node)
-
-        if let ast = node.channel {
+        
+        if let ast = node.value {
             self.visit__expression(ast)
         }
 
-        if let ast = node.value {
+        if let ast = node.channel {
             self.visit__expression(ast)
         }
 
@@ -1515,20 +1515,20 @@ class GoVisiter {
 
     func visit_slice_expression(_ node: goast_slice_expression) {
         self.visit_node(node)
-
-        if let ast = node.capacity {
+        
+        if let ast = node.operand {
             self.visit__expression(ast)
         }
-
+        
+        if let ast = node.start {
+            self.visit__expression(ast)
+        }
+        
         if let ast = node.end {
             self.visit__expression(ast)
         }
 
-        if let ast = node.operand {
-            self.visit__expression(ast)
-        }
-
-        if let ast = node.start {
+        if let ast = node.capacity {
             self.visit__expression(ast)
         }
 
@@ -1594,12 +1594,12 @@ class GoVisiter {
     func visit_type_alias(_ node: goast_type_alias) {
         self.visit_node(node)
 
-        if let ast = node.name {
-            self.visit_type_identifier(ast)
-        }
-
         if let ast = node.type {
             self.visit__type(ast)
+        }
+        
+        if let ast = node.name {
+            self.visit_type_identifier(ast)
         }
 
         if self.handleError {
@@ -1707,13 +1707,13 @@ class GoVisiter {
 
     func visit_type_switch_statement(_ node: goast_type_switch_statement) {
         self.visit_node(node)
+        
+        if let ast = node.initializer {
+            self.visit__simple_statement(ast)
+        }
 
         if let ast = node.alias {
             self.visit_expression_list(ast)
-        }
-
-        if let ast = node.initializer {
-            self.visit__simple_statement(ast)
         }
 
         if let ast = node.value {

@@ -109,7 +109,7 @@ class goast_binary_expression: goast__expression {
     var right: goast__expression? = nil
 }
 
-class goast_blank_identifier: GoAST {
+class goast_blank_identifier: GoAST, UASTIdentifier {
 }
 
 class goast_block: goast__statement {
@@ -215,7 +215,16 @@ class goast_field_declaration_list: GoAST {
     var children: [goast_field_declaration] = []
 }
 
-class goast_field_identifier: GoAST {
+class goast_field_identifier: GoAST, UASTIdentifier {
+    var _declarations: [SymbolPosition] = []
+    
+    var declarations: [SymbolPosition] {
+        return self._declarations
+    }
+    
+    func setDeclarations(_ decls: [SymbolPosition]) {
+        self._declarations = decls
+    }
 }
 
 class goast_float_literal: goast__expression {
@@ -262,7 +271,16 @@ class goast_goto_statement: goast__statement {
     var children: goast_label_name? = nil
 }
 
-class goast_identifier: goast__expression {
+class goast_identifier: goast__expression, UASTIdentifier {
+    var _declarations: [SymbolPosition] = []
+    
+    var declarations: [SymbolPosition] {
+        return self._declarations
+    }
+    
+    func setDeclarations(_ decls: [SymbolPosition]) {
+        self._declarations = decls
+    }
 }
 
 class goast_if_statement: goast__statement {
@@ -321,7 +339,16 @@ class goast_keyed_element: GoAST {
     var children: [GoAST] = []
 }
 
-class goast_label_name: GoAST {
+class goast_label_name: GoAST, UASTIdentifier {
+    var _declarations: [SymbolPosition] = []
+    
+    var declarations: [SymbolPosition] {
+        return self._declarations
+    }
+    
+    func setDeclarations(_ decls: [SymbolPosition]) {
+        self._declarations = decls
+    }
 }
 
 class goast_labeled_statement: goast__statement {
@@ -367,7 +394,16 @@ class goast_package_clause: GoAST {
     var children: goast_package_identifier? = nil
 }
 
-class goast_package_identifier: GoAST {
+class goast_package_identifier: GoAST, UASTIdentifier {
+    var _declarations: [SymbolPosition] = []
+    
+    var declarations: [SymbolPosition] {
+        return self._declarations
+    }
+    
+    func setDeclarations(_ decls: [SymbolPosition]) {
+        self._declarations = decls
+    }
 }
 
 class goast_parameter_declaration: GoAST {
@@ -485,7 +521,16 @@ class goast_type_declaration: goast__statement {
     var children: [GoAST] = []
 }
 
-class goast_type_identifier: goast__simple_type {
+class goast_type_identifier: goast__simple_type, UASTIdentifier {
+    var _declarations: [SymbolPosition] = []
+    
+    var declarations: [SymbolPosition] {
+        return self._declarations
+    }
+    
+    func setDeclarations(_ decls: [SymbolPosition]) {
+        self._declarations = decls
+    }
 }
 
 class goast_type_spec: GoAST {

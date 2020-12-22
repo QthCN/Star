@@ -35,6 +35,22 @@ open class AST {
         }
         return nil
     }
+    
+    public func finds<T> (t: T) -> [AST] {
+        var nodes: [AST] = []
+        if type(of: self) is T {
+            
+            nodes.append(self)
+        }
+        for child in self.children_nodes {
+            let childNodes = child.finds(t: t)
+            for childNode in childNodes {
+                nodes.append(childNode)
+            }
+            
+        }
+        return nodes
+    }
 }
 
 

@@ -974,8 +974,7 @@ final class GoParserTests: XCTestCase {
         while i <= 1000 {
             let ast = parser.parse(content: code)
             i += 1
-            let visiter = GoDeclVisiter(cu: ast, pkgScope: Scope(parent: nil, name: "Test"))
-            visiter.visit_ast(ast.getAST()! as! GoAST)
+            
         }
         //let ast = parser.parse(content: code)
         //print(ast)

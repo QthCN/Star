@@ -116,7 +116,7 @@ public class GoAnalyzer: Analyzer {
                     }
                     
                     // 对文件进行decl分析
-                    let declVisiter = GoDeclVisiter(cu: cu, pkgScope: package.scope)
+                    let declVisiter = GoDeclVisiter(cu: cu, pkgScope: package.scope, fileObject: dirItem)
                     declVisiter.visit_ast(cu.getAST()! as! GoAST)
                 }
             }
