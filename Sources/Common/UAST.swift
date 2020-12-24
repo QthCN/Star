@@ -36,3 +36,18 @@ extension UASTIdentifier {
         return self.declarations
     }
 }
+
+public func finds_UASTIdentifier(ast: AST) -> [UASTIdentifier] {
+    var nodes: [UASTIdentifier] = []
+    if let node = ast as? UASTIdentifier {
+        nodes.append(node)
+    }
+    for child in ast.children_nodes {
+        let childNodes = finds_UASTIdentifier(ast: child)
+        for childNode in childNodes {
+            nodes.append(childNode)
+        }
+        
+    }
+    return nodes
+}

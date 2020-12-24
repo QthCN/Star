@@ -29,4 +29,23 @@ public class Scope {
         }
         return self.parent?.find(name: name)
     }
+    
+    private func nblank(n: Int) -> String {
+        var i = 0
+        var s = ""
+        while i < n {
+            s += " "
+            i += 1
+        }
+        return s
+    }
+    
+    public func dump(_ level: Int = 0) {
+        let variables = self.declarations.keys
+        let joinedVariables = variables.joined(separator: ", ")
+        print("\(self.nblank(n: level))\(self.name): [\(joinedVariables)]\n")
+        for child in self.children {
+            child.dump(level + 2)
+        }
+    }
 }

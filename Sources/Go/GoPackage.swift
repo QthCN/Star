@@ -8,7 +8,7 @@
 import Foundation
 import Common
 
-class GoPackage {
+public class GoPackage {
     var path: String = ""
     var name: String = ""
     var files: [String:CompilationUnion] = [:]
@@ -28,5 +28,9 @@ class GoPackage {
     
     func setName(name: String) {
         self.name = name
+    }
+    
+    func getFile(name: String) -> CompilationUnion? {
+        return self.files[name]
     }
 }

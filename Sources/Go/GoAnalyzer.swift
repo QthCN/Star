@@ -26,6 +26,10 @@ public class GoAnalyzer: Analyzer {
     
     public init() {}
     
+    public func listPackages() -> [String:GoPackage] {
+        return self.packages
+    }
+    
     public func analysis(fs: FileSystem, config: Configuration) {
         self.fs = fs
         self.config = config

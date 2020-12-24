@@ -14,6 +14,7 @@ final class GoAnalyzerTests: XCTestCase {
     let analyzer = GoAnalyzer()
     let NO_GO_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/GoTests/GoExampleRepos/NonGoRepo"
     let GO_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/GoTests/GoExampleRepos/GoRepo"
+    let GO_DECL_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/GoTests/GoExampleRepos/GoDeclRepo"
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -38,12 +39,23 @@ final class GoAnalyzerTests: XCTestCase {
         XCTAssertEqual(analyzer.isGoProject(), true)
     }
     
-    func testAnalysis() {
+    func testDeclAnalysis() {
         let config = Configuration()
-        let fs = MacFileSystem(rootDir: GO_REPO_PATH)
-        //fs = MacFileSystem(rootDir: GO_REPO_PATH)
+        let fs = MacFileSystem(rootDir: GO_DECL_REPO_PATH)
         analyzer.analysis(fs: fs, config: config)
         XCTAssertEqual(analyzer.isGoProject(), true)
+        let packages = analyzer.listPackages()
+        let package = packages[""]!
+        let cu = package.getFile(name: "main.go")!
+        let ast = cu.getAST()!
+        let scope = package.scope
+        scope.dump()
+    
+        
+        let identifiers = finds_UASTIdentifier(ast: ast)
+        for identifier in identifiers {
+            print(identifier, identifier.listDeclarations())
+        }
     }
     
 }

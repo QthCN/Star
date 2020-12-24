@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class FileSystemObject {
+public class FileSystemObject: CustomStringConvertible {
     var isDir: Bool = false
     var path: String = ""
     var name: String = ""
@@ -45,6 +45,10 @@ public class FileSystemObject {
     
     public func objPath() -> String {
         return self.path
+    }
+    
+    public var description: String {
+        return "\(self.rpath())"
     }
 }
 

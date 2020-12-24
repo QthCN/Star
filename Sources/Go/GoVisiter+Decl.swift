@@ -234,6 +234,24 @@ class GoDeclVisiter: GoVisiter {
         }
     }
     
+    override func visit_function_type(_ node: goast_function_type) {
+        self.pushScope("FunctionType")
+        super.visit_function_type(node)
+        self.popScope()
+    }
+    
+    override func visit_method_spec_list(_ node: goast_method_spec_list) {
+        self.pushScope("MethodSpecList")
+        super.visit_method_spec_list(node)
+        self.popScope()
+    }
+    
+    override func visit_field_declaration_list(_ node: goast_field_declaration_list) {
+        self.pushScope("FieldDeclarationList")
+        super.visit_field_declaration_list(node)
+        self.popScope()
+    }
+    
     override func visit_parameter_declaration(_ node: goast_parameter_declaration) {
         super.visit_parameter_declaration(node)
         
@@ -285,13 +303,26 @@ class GoDeclVisiter: GoVisiter {
     override func visit_type_declaration(_ node: goast_type_declaration) {
         super.visit_type_declaration(node)
         
-        let identifiers = node.finds(t: goast_type_identifier.self)
-        for identifier in identifiers {
-            let name = identifier as! goast_type_identifier
-            self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-            name.setDeclarations([
-                SymbolPosition(file: self.fileObject, node: name)
-            ])
+        // typeSpec情况
+        let typeSpecs = node.finds(t: goast_type_spec.self)
+        for typeSpec in typeSpecs {
+            if let name = (typeSpec as! goast_type_spec).name {
+                self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
+                name.setDeclarations([
+                    SymbolPosition(file: self.fileObject, node: name)
+                ])
+            }
+        }
+        
+        // typeAlias情况
+        let typeAliases = node.finds(t: goast_type_alias.self)
+        for typeAlias in typeAliases {
+            if let name = (typeAlias as! goast_type_alias).name {
+                self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
+                name.setDeclarations([
+                    SymbolPosition(file: self.fileObject, node: name)
+                ])
+            }
         }
     }
     

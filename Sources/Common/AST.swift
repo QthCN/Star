@@ -7,7 +7,7 @@
 
 import Foundation
 
-open class AST {
+open class AST: CustomStringConvertible {
     public let pos: Position
     weak var parent: AST?
     var children_nodes: [AST] = []
@@ -18,6 +18,10 @@ open class AST {
         self.pos = pos
         self.parent = parent
         parent?.children_nodes.append(self)
+    }
+    
+    public var description: String {
+        return "\(type(of: self))[\(self.pos)]"
     }
     
     public func setScope(_ scope: Scope) {
@@ -39,7 +43,6 @@ open class AST {
     public func finds<T> (t: T) -> [AST] {
         var nodes: [AST] = []
         if type(of: self) is T {
-            
             nodes.append(self)
         }
         for child in self.children_nodes {
@@ -51,6 +54,7 @@ open class AST {
         }
         return nodes
     }
+
 }
 
 
@@ -73,7 +77,8 @@ public class Position: CustomStringConvertible {
     }
     
     public var description: String {
-        return "\(startLine):\(startCol) \(endLine):\(endCol) \(startBytes):\(endBytes)"
+        // 注意，这里为了方便debug都是从1开始
+        return "S\(startLine+1):\(startCol+1)E\(endLine+1):\(endCol+1)R\(startBytes+1):\(endBytes+1)"
     }
 }
 
@@ -101,7 +106,8 @@ public class SymbolPosition: CustomStringConvertible {
     }
 
     public var description: String {
-        return "\(file)[\(line):\(col)](\(node))"
+        // 注意，这里为了方便debug都是从1开始
+        return "\(file)[\(line+1):\(col+1)](\(node))"
     }
 }
 
