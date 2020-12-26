@@ -106,6 +106,8 @@ final class GoAnalyzerTests: XCTestCase {
         let scope = package.scope
         scope.dump()
         
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "ast", line: 3, col: 8, sIdx: 1))
+        
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "S1", line: 4, col: 6))
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "m1", line: 5, col: 5))
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "YYY", line: 5, col: 9, noDec: true))
@@ -126,7 +128,62 @@ final class GoAnalyzerTests: XCTestCase {
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "p2", line: 13, col: 13, sIdx: 3))
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "xxx", line: 15, col: 4, sIdx: 3))
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "p4", line: 17, col: 17))
+        
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "va", line: 20, col: 8))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "va", line: 20, col: 8, sIdx: 2))
+        
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "x", line: 14, col: 4, sIdx: 6))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "x", line: 14, col: 4, sIdx: 7))
+        
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "z", line: 28, col: 6, sIdx: 1))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "z", line: 28, col: 6, noDec: true, sIdx: 2))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "x", line: 14, col: 4, sIdx: 10))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "x", line: 14, col: 4, noDec: true, sIdx: 11))
+        
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "fx", line: 36, col: 5))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "S1", line: 4, col: 6, sIdx: 2))
     
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "rk01", line: 43, col: 9))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "v1", line: 40, col: 5, sIdx: 2))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "v1", line: 40, col: 5, sIdx: 3))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "v1", line: 44, col: 14, sIdx: 4))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "v1", line: 44, col: 14, sIdx: 5))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "v1", line: 40, col: 5, sIdx: 6))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "rk01", line: 46, col: 6, sIdx: 3))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "rk01", line: 43, col: 9, sIdx: 4))
+        
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "s1", line: 51, col: 7, sIdx: 1))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "S1", line: 4, col: 6, sIdx: 3))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "s1", line: 51, col: 7, sIdx: 2))
+        
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "value001", line: 53, col: 5, sIdx: 1))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "value001", line: 53, col: 5, sIdx: 2))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "value001", line: 53, col: 5, sIdx: 3))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "value001", line: 53, col: 5, sIdx: 4))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "ifx", line: 56, col: 13, sIdx: 1))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "ifx", line: 58, col: 13, sIdx: 2))
+        
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "ok001", line: 53, col: 15, sIdx: 1))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "ok001", line: 53, col: 15, sIdx: 2))
+        
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "ast", line: 3, col: 8, sIdx: 2))
+        
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "t001", line: 75, col: 16, sIdx: 1))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "t001", line: 75, col: 16, sIdx: 2))
+        
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "whatAmI", line: 74, col: 1, sIdx: 1))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "whatAmI", line: 74, col: 1, sIdx: 2))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "whatAmI", line: 74, col: 1, sIdx: 3))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "whatAmI", line: 74, col: 1, sIdx: 4))
+        
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "i002", line: 73, col: 1, sIdx: 1))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "i002", line: 74, col: 17, sIdx: 2))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "i002", line: 74, col: 17, sIdx: 3))
+        
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "fi001", line: 119, col: 7, sIdx: 1))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "fi001", line: 119, col: 7, sIdx: 2))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "fi001", line: 119, col: 7, sIdx: 3))
+        
         
         let identifiers = finds_UASTIdentifier(ast: ast)
         for identifier in identifiers {

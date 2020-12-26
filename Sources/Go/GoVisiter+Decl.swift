@@ -214,12 +214,7 @@ class GoDeclVisiter: GoVisiter {
         super.visit_method_declaration(node)
         self.popScope()
         
-        if let name = node.name {
-            self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-            name.setDeclarations([
-                SymbolPosition(file: self.fileObject, node: name)
-            ])
-        }
+        // 对于Method我们不做name的处理，因为实际上name属于receiver
     }
     
     override func visit_package_identifier(_ node: goast_package_identifier) {
@@ -419,7 +414,7 @@ class GoDeclVisiter: GoVisiter {
         if let left = node.left {
             if let right = node.right {
                 let op = self.cu.codesBetweenPos(left.pos, right.pos).trimmingCharacters(in: .whitespacesAndNewlines)
-                if op != ":=" {
+                if !op.contains(":=") {
                     return
                 }
             }
