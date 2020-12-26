@@ -83,7 +83,7 @@ public class Position: CustomStringConvertible {
 }
 
 // 某个Symbol在整个项目中的位置
-public class SymbolPosition: CustomStringConvertible {
+public class SymbolPosition: CustomStringConvertible, Equatable {
     var file: FileSystemObject
     // 从0开始
     var line: Int
@@ -108,6 +108,10 @@ public class SymbolPosition: CustomStringConvertible {
     public var description: String {
         // 注意，这里为了方便debug都是从1开始
         return "\(file)[\(line+1):\(col+1)](\(node))"
+    }
+    
+    public static func == (lhs: SymbolPosition, rhs: SymbolPosition) -> Bool {
+        return lhs.line == rhs.line && lhs.col == rhs.col && lhs.file == rhs.file
     }
 }
 

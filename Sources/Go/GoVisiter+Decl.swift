@@ -267,13 +267,24 @@ class GoDeclVisiter: GoVisiter {
         super.visit_short_var_declaration(node)
         
         if let left = node.left {
+            if let right = node.right {
+                let op = self.cu.codesBetweenPos(left.pos, right.pos).trimmingCharacters(in: .whitespacesAndNewlines)
+                if op != ":=" {
+                    return
+                }
+            }
+            
             let identifiers = left.finds(t: goast_identifier.self)
             for identifier in identifiers {
                 let name = identifier as! goast_identifier
-                self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-                name.setDeclarations([
-                    SymbolPosition(file: self.fileObject, node: name)
-                ])
+                if self.currentScope.find(name: self.cu.codes(pos: name.pos)) != nil && identifiers.count > 1 {
+                    // 如果name已经有定义了并且左侧变量个数大于1
+                } else {
+                    self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
+                    name.setDeclarations([
+                        SymbolPosition(file: self.fileObject, node: name)
+                    ])
+                }
             }
         }
     }
@@ -340,7 +351,38 @@ class GoDeclVisiter: GoVisiter {
     
     override func visit_type_switch_statement(_ node: goast_type_switch_statement) {
         self.pushScope("TypeSwitchStatement")
-        super.visit_type_switch_statement(node)
+        
+        self.visit_node(node)
+        
+        if let ast = node.initializer {
+            self.visit__simple_statement(ast)
+        }
+
+        if let ast = node.alias {
+            self.visit_expression_list(ast)
+            let identifiers = ast.finds(t: goast_identifier.self)
+            for identifier in identifiers {
+                let name = identifier as! goast_identifier
+                self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
+                name.setDeclarations([
+                    SymbolPosition(file: self.fileObject, node: name)
+                ])
+            }
+        }
+
+        if let ast = node.value {
+            self.visit__expression(ast)
+        }
+
+        for ast in node.children {
+            self.visit_ast(ast)
+        }
+
+        if self.handleError {
+            for node in node.errors {
+                self.visit_ast(node)
+            }
+        }
         self.popScope()
     }
     
@@ -375,13 +417,24 @@ class GoDeclVisiter: GoVisiter {
         super.visit_range_clause(node)
         
         if let left = node.left {
+            if let right = node.right {
+                let op = self.cu.codesBetweenPos(left.pos, right.pos).trimmingCharacters(in: .whitespacesAndNewlines)
+                if op != ":=" {
+                    return
+                }
+            }
+            
             let identifiers = left.finds(t: goast_identifier.self)
             for identifier in identifiers {
                 let name = identifier as! goast_identifier
-                self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-                name.setDeclarations([
-                    SymbolPosition(file: self.fileObject, node: name)
-                ])
+                if self.currentScope.find(name: self.cu.codes(pos: name.pos)) != nil && identifiers.count > 1 {
+                    // 如果name已经有定义了并且左侧变量个数大于1
+                } else {
+                    self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
+                    name.setDeclarations([
+                        SymbolPosition(file: self.fileObject, node: name)
+                    ])
+                }
             }
         }
     }
@@ -408,13 +461,24 @@ class GoDeclVisiter: GoVisiter {
         super.visit_receive_statement(node)
         
         if let left = node.left {
+            if let right = node.right {
+                let op = self.cu.codesBetweenPos(left.pos, right.pos).trimmingCharacters(in: .whitespacesAndNewlines)
+                if op != ":=" {
+                    return
+                }
+            }
+            
             let identifiers = left.finds(t: goast_identifier.self)
             for identifier in identifiers {
                 let name = identifier as! goast_identifier
-                self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-                name.setDeclarations([
-                    SymbolPosition(file: self.fileObject, node: name)
-                ])
+                if self.currentScope.find(name: self.cu.codes(pos: name.pos)) != nil && identifiers.count > 1 {
+                    // 如果name已经有定义了并且左侧变量个数大于1
+                } else {
+                    self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
+                    name.setDeclarations([
+                        SymbolPosition(file: self.fileObject, node: name)
+                    ])
+                }
             }
         }
     }

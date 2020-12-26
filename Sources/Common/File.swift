@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class FileSystemObject: CustomStringConvertible {
+public class FileSystemObject: CustomStringConvertible, Equatable {
     var isDir: Bool = false
     var path: String = ""
     var name: String = ""
@@ -23,6 +23,10 @@ public class FileSystemObject: CustomStringConvertible {
         self.path = path
         self.name = name
         self.isDir = isDir
+    }
+    
+    public static func == (lhs: FileSystemObject, rhs: FileSystemObject) -> Bool {
+        return lhs.isDir == rhs.isDir && lhs.path == rhs.path && lhs.name == rhs.name
     }
 
     public func rpath() -> String {

@@ -50,4 +50,10 @@ public class CompilationUnion {
         let endIndex = self.content.index(self.content.startIndex, offsetBy: pos.endBytes)
         return String(self.content[startIndex..<endIndex])
     }
+    
+    public func codesBetweenPos(_ posA: Position, _ posB: Position) -> String {
+        let startIndex = self.content.index(self.content.startIndex, offsetBy: posA.endBytes)
+        let endIndex = self.content.index(self.content.startIndex, offsetBy: posB.startBytes)
+        return String(self.content[startIndex..<endIndex])
+    }
 }

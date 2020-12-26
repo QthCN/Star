@@ -23,11 +23,14 @@ public class Scope {
         self.declarations[name] = node
     }
     
-    public func find(name: String) -> AST? {
+    public func find(name: String, depth: Int = -1) -> AST? {
         if let node = self.declarations[name] {
             return node
         }
-        return self.parent?.find(name: name)
+        if depth == 0 {
+            return nil
+        }
+        return self.parent?.find(name: name, depth: depth-1)
     }
     
     private func nblank(n: Int) -> String {
