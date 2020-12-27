@@ -14,27 +14,20 @@ open class Parser {
         return CompilationUnion(content: content)
     }
     
-    public func codes(node: AST) -> String {
-        let pos = node.pos
-        let startIndex = self.content.index(self.content.startIndex, offsetBy: pos.startBytes)
-        let endIndex = self.content.index(self.content.startIndex, offsetBy: pos.endBytes)
-        return String(self.content[startIndex..<endIndex])
-    }
-    
 }
 
 public class CompilationUnion {
     let ast: AST?
-    let content: String
+    let content: String.UTF8View
     
     public init(ast: AST, content: String) {
         self.ast = ast
-        self.content = content
+        self.content = content.utf8
     }
     
     public init(content: String) {
         self.ast = nil
-        self.content = content
+        self.content = content.utf8
     }
     
     public func inError() -> Bool {
@@ -48,12 +41,12 @@ public class CompilationUnion {
     public func codes(pos: Position) -> String {
         let startIndex = self.content.index(self.content.startIndex, offsetBy: pos.startBytes)
         let endIndex = self.content.index(self.content.startIndex, offsetBy: pos.endBytes)
-        return String(self.content[startIndex..<endIndex])
+        return String(self.content[startIndex..<endIndex])!
     }
     
     public func codesBetweenPos(_ posA: Position, _ posB: Position) -> String {
         let startIndex = self.content.index(self.content.startIndex, offsetBy: posA.endBytes)
         let endIndex = self.content.index(self.content.startIndex, offsetBy: posB.startBytes)
-        return String(self.content[startIndex..<endIndex])
+        return String(self.content[startIndex..<endIndex])!
     }
 }

@@ -13,7 +13,7 @@ let ignoreDirs = ["vender", "node_modules", ".git"]
 public class GoAnalyzer: Analyzer {
     var fs: FileSystem! = nil
     var config: Configuration = Configuration()
-    var parser: GoParser = GoParser()
+    let queue = DispatchQueue(label: "star.goanalyzer", qos: .userInteractive, attributes: .concurrent)
     
     /// 分析结果
     // package列表 key为路径
@@ -69,13 +69,6 @@ public class GoAnalyzer: Analyzer {
     }
     
     func analysisPackages(_ dir: FileSystemObject) {
-        guard dir.dir() else {
-            return
-        }
-        
-        guard !ignoreDirs.contains(dir.objName()) else {
-            return
-        }
         
         let package = GoPackage()
         // 分析这个package
@@ -89,27 +82,35 @@ public class GoAnalyzer: Analyzer {
         
         // 分析子目录中的package
         let subDirItems = self.fs.listItems(path: dir)
+        let group = DispatchGroup()
         for subDirItem in subDirItems {
-            self.analysisPackages(subDirItem)
+            if !subDirItem.dir() || ignoreDirs.contains(subDirItem.objName()) {
+                continue
+            }
+            
+            group.enter()
+            self.queue.async {
+                self.analysisPackages(subDirItem)
+                group.leave()
+            }
         }
-        
-        // 分析type信息
-        self.analysisTypeInfo()
+        group.wait()
         
     }
     
     func analysisPackage(_ directory: FileSystemObject, _ package: GoPackage) {
         let dirItems = self.fs.listItems(path: directory)
-        
+        print("analysis \(directory.rpath())")
         // 设置同一个package下的parser共用同一个scope
-        self.parser.scope = package.scope
+        let parser = GoParser()
+        parser.scope = package.scope
         for dirItem in dirItems {
             if dirItem.dir() || !dirItem.objName().hasSuffix(".go") {
                 continue
             }
             
             if let content = self.fs.getFileContent(item: dirItem) {
-                let cu = self.parser.parse(content: content)
+                let cu = parser.parse(content: content)
                 if cu.getAST() != nil {
                     package.addFile(name: dirItem.objName(), cu: cu)
                     
