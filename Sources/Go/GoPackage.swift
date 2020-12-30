@@ -18,8 +18,7 @@ public class GoPackage {
     }
     
     func valid() -> Bool {
-        // 判断是否为一个valid的pacakge，一个valid的package需要包含有效的go文件
-        return true
+        return self.name != ""
     }
     
     func addFile(name: String, cu: CompilationUnion) {

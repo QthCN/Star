@@ -20,20 +20,10 @@ enum GoBasicKind {
     // predeclared types
     case bool
     case int
-    case int8
-    case int16
-    case int32
-    case int64
     case uint
-    case uint8
-    case uint16
-    case uint32
-    case uint64
     case uintptr
-    case float32
-    case float64
-    case complex64
-    case complex128
+    case float
+    case complex
     case string
     case unsafePointer
 
@@ -60,11 +50,16 @@ class GoBasicType: GoType {
 }
 
 class GoArrayType: GoType {
-    let len: Int
+    let len: Int?
     let elem: GoType
     
     init(len: Int, elem: GoType) {
         self.len = len
+        self.elem = elem
+    }
+    
+    init(elem: GoType) {
+        self.len = nil
         self.elem = elem
     }
 }
@@ -87,7 +82,7 @@ enum GoVarSituation {
 
 class GoVar {
     let name: String
-    let typ: GoType
+    let typ: GoType?
     let situation: GoVarSituation
     
     init(name: String, typ: GoType, situation: GoVarSituation) {
@@ -171,17 +166,17 @@ class GoMapType: GoType {
     }
 }
 
-enum GoChainDir {
+enum GoChanDir {
     case sendrecv
     case sendonly
     case recvonly
 }
 
 class GoChanType: GoType {
-    let dir: GoChainDir
+    let dir: GoChanDir
     let elem: GoType
     
-    init(dir: GoChainDir, elem: GoType) {
+    init(dir: GoChanDir, elem: GoType) {
         self.dir = dir
         self.elem = elem
     }

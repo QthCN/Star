@@ -7,6 +7,10 @@
 
 import Foundation
 
+
+
+/// Expr
+
 public protocol UASTExpr {
     var type: Type? { get }
     func getType() -> Type?
@@ -21,6 +25,24 @@ extension UASTExpr {
         return self.type
     }
 }
+
+public func finds_UASTExpr(ast: AST) -> [UASTExpr] {
+    var nodes: [UASTExpr] = []
+    if let node = ast as? UASTExpr {
+        nodes.append(node)
+    }
+    for child in ast.children_nodes {
+        let childNodes = finds_UASTExpr(ast: child)
+        for childNode in childNodes {
+            nodes.append(childNode)
+        }
+        
+    }
+    return nodes
+}
+
+
+/// Identifier
 
 public protocol UASTIdentifier: UASTExpr {
     var declarations: [SymbolPosition] { get }

@@ -10,6 +10,10 @@ import Common
 
 
 // 执行分析，分析的结果存在AST节点中
+// 这里实际上会执行以下几类分析
+//  - 单文件scope的Decl分析
+//  - 单文件scope的Type分析
+
 class GoDeclVisiter: GoVisiter {
     
     var cu: CompilationUnion
@@ -54,8 +58,18 @@ class GoDeclVisiter: GoVisiter {
     
     override func visit_composite_literal(_ node: goast_composite_literal) {
         self.pushScope("CompositeLiteral")
+        defer {
+            self.popScope()
+        }
+        
         super.visit_composite_literal(node)
-        self.popScope()
+        
+        // Type
+        guard let type = (node.type as? UASTExpr)?.getType() as? GoType else {
+            return
+        }
+        node.setType(type: type)
+        
     }
     
     override func visit_const_declaration(_ node: goast_const_declaration) {
@@ -70,6 +84,23 @@ class GoDeclVisiter: GoVisiter {
                 name.setDeclarations([
                     SymbolPosition(file: self.fileObject, node: name)
                 ])
+            }
+        }
+    }
+    
+    override func visit_const_spec(_ node: goast_const_spec) {
+        super.visit_const_spec(node)
+        
+        // Type
+        if let type = node.type?.getType() as? GoType {
+            for name in node.name {
+                name.setType(type: type)
+            }
+        } else if let exprList = node.value {
+            for (idx, element) in node.name.enumerated() {
+                if let elementType = exprList.children[idx].getType() as? GoType {
+                    element.setType(type: elementType)
+                }
             }
         }
     }
@@ -124,8 +155,12 @@ class GoDeclVisiter: GoVisiter {
     
     override func visit_func_literal(_ node: goast_func_literal) {
         self.pushScope("FuncLiteral")
+        defer {
+            self.popScope()
+        }
+        
         super.visit_func_literal(node)
-        self.popScope()
+        
     }
     
     override func visit_function_declaration(_ node: goast_function_declaration) {
@@ -150,6 +185,11 @@ class GoDeclVisiter: GoVisiter {
             node.setDeclarations([
                 SymbolPosition(file: self.fileObject, node: decl)
             ])
+        }
+        
+        // Type
+        if let declType = (self.currentScope.find(name: name) as? UASTExpr)?.getType() as? GoType {
+            node.setType(type: declType)
         }
     }
     
@@ -256,6 +296,14 @@ class GoDeclVisiter: GoVisiter {
                 SymbolPosition(file: self.fileObject, node: name)
             ])
         }
+        
+        // Type
+        guard let type = node.type?.getType() as? GoType else {
+            return
+        }
+        for name in node.name {
+            name.setType(type: type)
+        }
     }
     
     override func visit_short_var_declaration(_ node: goast_short_var_declaration) {
@@ -297,6 +345,14 @@ class GoDeclVisiter: GoVisiter {
             name.setDeclarations([
                 SymbolPosition(file: self.fileObject, node: name)
             ])
+        }
+        
+        // Type
+        guard let type = node.type?.getType() as? GoType else {
+            return
+        }
+        if let name = node.name {
+            name.setType(type: type)
         }
     }
     
@@ -477,5 +533,287 @@ class GoDeclVisiter: GoVisiter {
             }
         }
     }
+    
+    override func visit_array_type(_ node: goast_array_type) {
+        super.visit_array_type(node)
+        
+        // Type
+        if node.length == nil {
+            return
+        }
+        
+        guard let length = Int(self.cu.codes(pos: node.length!.pos)) else {
+            return
+        }
+        
+        guard let elementType = node.element?.getType() as? GoType else {
+            return
+        }
+        
+        let arrayType = GoArrayType(len: length, elem: elementType)
+        node.setType(type: arrayType)
+    }
+    
+    override func visit_binary_expression(_ node: goast_binary_expression) {
+        super.visit_binary_expression(node)
+        
+        // Type
+        if let leftType = node.left?.getType() as? GoType {
+            node.setType(type: leftType)
+        } else if let rightType = node.right?.getType() as? GoType {
+            node.setType(type: rightType)
+        }
+    }
+    
+    override func visit_call_expression(_ node: goast_call_expression) {
+        super.visit_call_expression(node)
+        
+        // Type
+        if let functionType = node.function?.getType() as? GoSignatureType {
+            node.setType(type: functionType.results)
+        }
+    }
+    
+    override func visit_channel_type(_ node: goast_channel_type) {
+        super.visit_channel_type(node)
+        
+        // Type
+        guard let elemType = node.value?.getType() as? GoType else {
+            return
+        }
+        
+        let codes = self.cu.codes(pos: node.pos).trimmingCharacters(in: .whitespacesAndNewlines)
+        var dir: GoChanDir = .sendrecv
+        if codes.hasPrefix("<-") {
+            dir = .recvonly
+        } else if codes.hasPrefix("chan") {
+            let subCodes = codes.dropFirst(4).trimmingCharacters(in: .whitespacesAndNewlines)
+            if subCodes.hasPrefix("<-") {
+                dir = .sendonly
+            } else {
+                dir = .sendrecv
+            }
+        }
+        let chanType = GoChanType(dir: dir, elem: elemType)
+        node.setType(type: chanType)
+        
+    }
+    
+    override func visit_false(_ node: goast_false) {
+        super.visit_false(node)
+        
+        // Type
+        let boolType = GoBasicType(kind: .bool)
+        node.setType(type: boolType)
+    }
+    
+    override func visit_float_literal(_ node: goast_float_literal) {
+        super.visit_float_literal(node)
+        
+        // Type
+        let floatType = GoBasicType(kind: .float)
+        node.setType(type: floatType)
+    }
+    
+    override func visit_imaginary_literal(_ node: goast_imaginary_literal) {
+        super.visit_imaginary_literal(node)
+        
+        // Type
+        let complexType = GoBasicType(kind: .complex)
+        node.setType(type: complexType)
+    }
+    
+    override func visit_implicit_length_array_type(_ node: goast_implicit_length_array_type) {
+        super.visit_implicit_length_array_type(node)
+        
+        // Type
+        guard let elementType = node.element?.getType() as? GoType else {
+            return
+        }
+        
+        let arrayType = GoArrayType(elem: elementType)
+        node.setType(type: arrayType)
+    }
+    
+    override func visit_index_expression(_ node: goast_index_expression) {
+        super.visit_index_expression(node)
+        
+        // Type
+        guard let operand = node.operand else {
+            return
+        }
+        
+        switch operand.getType() {
+        case let t as GoArrayType:
+            node.setType(type: t.elem)
+        case let t as GoSliceType:
+            node.setType(type: t.elem)
+        case let t as GoMapType:
+            node.setType(type: t.elem)
+        default:
+            break
+        }
+    }
+    
+    override func visit_int_literal(_ node: goast_int_literal) {
+        super.visit_int_literal(node)
+        
+        // Type
+        let intType = GoBasicType(kind: .int)
+        node.setType(type: intType)
+    }
+    
+    override func visit_interpreted_string_literal(_ node: goast_interpreted_string_literal) {
+        super.visit_interpreted_string_literal(node)
+        
+        // Type
+        let stringType = GoBasicType(kind: .string)
+        node.setType(type: stringType)
+    }
+    
+    override func visit_map_type(_ node: goast_map_type) {
+        super.visit_map_type(node)
+        
+        // Type
+        guard let keyType = node.key?.getType() as? GoType else {
+            return
+        }
+        
+        guard let valueType = node.value?.getType() as? GoType else {
+            return
+        }
+        
+        let mapType = GoMapType(key: keyType, elem: valueType)
+        node.setType(type: mapType)
+    }
+    
+    override func visit_parenthesized_expression(_ node: goast_parenthesized_expression) {
+        super.visit_parenthesized_expression(node)
+        
+        // Type
+        guard let type = node.children?.getType() as? GoType else {
+            return
+        }
+        node.setType(type: type)
+    }
+    
+    override func visit_parenthesized_type(_ node: goast_parenthesized_type) {
+        super.visit_parenthesized_type(node)
+        
+        // Type
+        guard let type = node.children?.getType() as? GoType else {
+            return
+        }
+        node.setType(type: type)
+    }
+    
+    override func visit_pointer_type(_ node: goast_pointer_type) {
+        super.visit_pointer_type(node)
+        
+        // Type
+        guard let type = node.children?.getType() as? GoType else {
+            return
+        }
+        let pointType = GoPointerType(base: type)
+        node.setType(type: pointType)
+    }
+    
+    override func visit_raw_string_literal(_ node: goast_raw_string_literal) {
+        super.visit_raw_string_literal(node)
+        
+        // Type
+        let stringType = GoBasicType(kind: .string)
+        node.setType(type: stringType)
+    }
+    
+    override func visit_rune_literal(_ node: goast_rune_literal) {
+        super.visit_rune_literal(node)
+        
+        // Type
+        let stringType = GoBasicType(kind: .rune)
+        node.setType(type: stringType)
+    }
+    
+    override func visit_slice_expression(_ node: goast_slice_expression) {
+        super.visit_slice_expression(node)
+        
+        // Type
+        guard let operand = node.operand else {
+            return
+        }
+        
+        switch operand.getType() {
+        case let t as GoArrayType:
+            node.setType(type: t.elem)
+        case let t as GoSliceType:
+            node.setType(type: t.elem)
+        case let t as GoMapType:
+            node.setType(type: t.elem)
+        default:
+            break
+        }
+    }
+    
+    override func visit_slice_type(_ node: goast_slice_type) {
+        super.visit_slice_type(node)
+        
+        // Type
+        guard let elementType = node.element?.getType() as? GoType else {
+            return
+        }
+        
+        let sliceType = GoSliceType(elem: elementType)
+        node.setType(type: sliceType)
+    }
+    
+    override func visit_true(_ node: goast_true) {
+        super.visit_true(node)
+        
+        // Type
+        let boolType = GoBasicType(kind: .bool)
+        node.setType(type: boolType)
+    }
+    
+    override func visit_type_conversion_expression(_ node: goast_type_conversion_expression) {
+        super.visit_type_conversion_expression(node)
+        
+        // Type
+        guard let type = node.type?.getType() as? GoType else {
+            return
+        }
+        node.setType(type: type)
+    }
+    
+    override func visit_unary_expression(_ node: goast_unary_expression) {
+        super.visit_unary_expression(node)
+        
+        // Type
+        guard let type = node.operand?.getType() as? GoType else {
+            return
+        }
+        node.setType(type: type)
+    }
+    
+    
+    // TODO
+    // visit_func_literal
+    // visit_function_declaration
+    // visit_function_type
+    // visit_interface_type
+    // visit_method_declaration
+    // visit_parameter_list
+    // visit_range_clause
+    // visit_receive_statement
+    // visit_short_var_declaration
+    // visit_struct_type
+    // visit_type_assertion_expression
+    // visit_type_declaration
+    // visit_type_identifier
+    // visit_type_spec
+    // visit_type_switch_statement
+    // visit_var_declaration
+    // visit_var_spec
+    // visit_variadic_parameter_declaration
+    // identifier的重名定义处理
     
 }

@@ -16,7 +16,7 @@ class goast_comment: GoAST {
 
 }
 
-class goast__expression: goast__simple_statement {
+class goast__expression: goast__simple_statement, UASTExpr {
     // subtype: goast_binary_expression
     // subtype: goast_call_expression
     // subtype: goast_composite_literal
@@ -38,6 +38,16 @@ class goast__expression: goast__simple_statement {
     // subtype: goast_type_assertion_expression
     // subtype: goast_type_conversion_expression
     // subtype: goast_unary_expression
+    
+    var _type: GoType? = nil
+    
+    func getType() -> Type? {
+        return self._type
+    }
+    
+    func setType(type: GoType) {
+        self._type = type
+    }
 }
 
 class goast__simple_statement: goast__statement {
@@ -84,9 +94,19 @@ class goast__statement: GoAST {
     // subtype: goast_var_declaration
 }
 
-class goast__type: GoAST {
+class goast__type: GoAST, UASTExpr {
     // subtype: goast__simple_type
     // subtype: goast_parenthesized_type
+    
+    var _type: GoType? = nil
+    
+    func getType() -> Type? {
+        return self._type
+    }
+    
+    func setType(type: GoType) {
+        self._type = type
+    }
 }
 
 class goast_argument_list: GoAST {
@@ -294,8 +314,18 @@ class goast_if_statement: goast__statement {
 class goast_imaginary_literal: goast__expression {
 }
 
-class goast_implicit_length_array_type: GoAST {
+class goast_implicit_length_array_type: GoAST, UASTExpr {
     var element: goast__type? = nil
+    
+    var _type: GoType? = nil
+    
+    func getType() -> Type? {
+        return self._type
+    }
+    
+    func setType(type: GoType) {
+        self._type = type
+    }
 }
 
 class goast_import_declaration: GoAST {

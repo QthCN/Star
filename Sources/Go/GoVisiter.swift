@@ -1055,12 +1055,12 @@ class GoVisiter {
 
     func visit_index_expression(_ node: goast_index_expression) {
         self.visit_node(node)
-
-        if let ast = node.index {
+        
+        if let ast = node.operand {
             self.visit__expression(ast)
         }
 
-        if let ast = node.operand {
+        if let ast = node.index {
             self.visit__expression(ast)
         }
 
