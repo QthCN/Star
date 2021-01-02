@@ -48,6 +48,10 @@ class goast__expression: goast__simple_statement, UASTExpr {
     func setType(type: GoType) {
         self._type = type
     }
+    
+    func clearType() {
+        self._type = nil
+    }
 }
 
 class goast__simple_statement: goast__statement {

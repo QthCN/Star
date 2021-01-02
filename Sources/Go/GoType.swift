@@ -41,6 +41,11 @@ enum GoBasicKind {
     case rune // Int32
 }
 
+// 类似于nil，主要是在tupleType里使用
+class GoUnknownType: GoType {
+    
+}
+
 class GoBasicType: GoType {
     let kind: GoBasicKind
     
@@ -95,11 +100,9 @@ class GoVar {
 
 class GoStructType: GoType {
     let fields: [GoVar]
-    let tags: [String]
     
-    init(fields: [GoVar], tags: [String]) {
+    init(fields: [GoVar]) {
         self.fields = fields
-        self.tags = tags
     }
 }
 

@@ -20,6 +20,10 @@ class GoDeclVisiter: GoVisiter {
     var pkgScope: Scope
     var currentScope: Scope
     var fileObject: FileSystemObject
+    // TypeSwitchStatement的变量
+    var tssVStack: [goast_identifier?] = []
+    
+    
     init(cu: CompilationUnion, pkgScope: Scope, fileObject: FileSystemObject) {
         self.cu = cu
         self.pkgScope = pkgScope
@@ -36,6 +40,183 @@ class GoDeclVisiter: GoVisiter {
     
     func popScope() {
         self.currentScope = self.currentScope.parent ?? self.currentScope
+    }
+    
+    func typeInfer_signature_parameter_list(parameter_list: goast_parameter_list?) -> (GoTupleType, Bool) {
+        var hasVariadicParameter = false
+        if parameter_list == nil {
+            return (GoTupleType(vars: []), hasVariadicParameter)
+        }
+        
+        var vars: [GoVar] = []
+        for child in parameter_list!.children {
+            switch child {
+            case let node as goast_parameter_declaration:
+                if let type = node.type?.getType() as? GoType {
+                    for ident in node.name {
+                        let v = GoVar(name: self.cu.codes(pos: ident.pos), typ: type, situation: .param)
+                        vars.append(v)
+                    }
+                }
+            case let node as goast_variadic_parameter_declaration:
+                hasVariadicParameter = true
+                if let type = node.type?.getType() as? GoType {
+                    if let ident = node.name {
+                        let v = GoVar(name: self.cu.codes(pos: ident.pos), typ: type, situation: .param)
+                        vars.append(v)
+                    }
+                }
+            default:
+                break
+            }
+        }
+        
+        return (GoTupleType(vars: vars), hasVariadicParameter)
+    }
+    
+    // 处理Func Signature
+    func typeInfer_signature(receiver: goast_parameter_list?, parameters: goast_parameter_list?, results: GoAST?) -> GoSignatureType? {
+        // 简单判断下
+        if parameters == nil {
+            return nil
+        }
+        
+        // 处理receiver
+        let (recv, _) = self.typeInfer_signature_parameter_list(parameter_list: receiver)
+        if receiver != nil && recv.vars.count != 1 {
+            // 如果receiver存在但上面没有分析出来的话就不用处理了，再多文件分析阶段会再次处理
+            return nil
+        }
+        
+        // 处理parameter
+        let (params, hasVariadicParam) = self.typeInfer_signature_parameter_list(parameter_list: parameters)
+        
+        // 处理Result
+        switch results {
+        case nil:
+            return GoSignatureType(recv: recv.vars[0], params: params, results: GoTupleType(vars: []), variadic: hasVariadicParam)
+        case let node as goast_parameter_list:
+            let (res, _) = self.typeInfer_signature_parameter_list(parameter_list: node)
+            return GoSignatureType(recv: recv.vars[0], params: params, results: res, variadic: hasVariadicParam)
+        default:
+            if let type = (results as? goast__simple_type)?.getType() as? GoType {
+                let resVar = GoVar(name: "", typ: type, situation: .param)
+                let res = GoTupleType(vars: [resVar])
+                return GoSignatureType(recv: recv.vars[0], params: params, results: res, variadic: hasVariadicParam)
+            } else {
+                return nil
+            }
+        }
+    }
+    
+    // 处理left := node这种类型的type
+    func typeInfer_assign_right_to_left(left: goast_expression_list, right: goast_expression_list) {
+        var types: [GoType] = []
+        
+        for item in right.children {
+            switch item.getType() {
+            case let itemType as GoTupleType:
+                for v in itemType.vars {
+                    types.append(v.typ ?? GoUnknownType())
+                }
+            default:
+                if let t = item.getType() as? GoType {
+                    types.append(t)
+                } else {
+                    types.append(GoUnknownType())
+                }
+            }
+        }
+        
+        for (idx, item) in left.children.enumerated() {
+            if idx >= types.count {
+                break
+            }
+            let rightType = types[idx]
+            if rightType is GoUnknownType {
+                // pass
+            } else {
+                item.setType(type: rightType)
+            }
+        }
+    }
+    
+    func typeInfer_assign_right_to_left(left: [goast_identifier], right: goast_expression_list) {
+        var types: [GoType] = []
+        
+        for item in right.children {
+            switch item.getType() {
+            case let itemType as GoTupleType:
+                for v in itemType.vars {
+                    types.append(v.typ ?? GoUnknownType())
+                }
+            default:
+                if let t = item.getType() as? GoType {
+                    types.append(t)
+                } else {
+                    types.append(GoUnknownType())
+                }
+            }
+        }
+        
+        for (idx, item) in left.enumerated() {
+            if idx >= types.count {
+                break
+            }
+            let rightType = types[idx]
+            if rightType is GoUnknownType {
+                // pass
+            } else {
+                item.setType(type: rightType)
+            }
+        }
+    }
+    
+    func typeInfer_assign_right_to_left(left: goast_expression_list, right: goast__expression) {
+        var types: [GoType] = []
+        
+        if right is goast_type_assertion_expression {
+            guard let rightType = right.getType() as? GoType else {
+                return
+            }
+            if left.children.count == 1 {
+                if let ident = left.children[0] as? goast_identifier {
+                    ident.setType(type: rightType)
+                }
+            } else if left.children.count == 2 {
+                if let ident = left.children[0] as? goast_identifier {
+                    ident.setType(type: rightType)
+                }
+                if let ok = left.children[1] as? goast_identifier {
+                    ok.setType(type: GoBasicType(kind: .bool))
+                }
+            }
+        } else {
+            switch right.getType() {
+            case let itemType as GoTupleType:
+                for v in itemType.vars {
+                    types.append(v.typ ?? GoUnknownType())
+                }
+            default:
+                if let t = right.getType() as? GoType {
+                    types.append(t)
+                } else {
+                    types.append(GoUnknownType())
+                }
+            }
+            
+            for (idx, item) in left.children.enumerated() {
+                if idx >= types.count {
+                    break
+                }
+                let rightType = types[idx]
+                if rightType is GoUnknownType {
+                    // pass
+                } else {
+                    item.setType(type: rightType)
+                }
+            }
+        }
     }
     
     override func visit_node(_ node: GoAST) {
@@ -161,6 +342,11 @@ class GoDeclVisiter: GoVisiter {
         
         super.visit_func_literal(node)
         
+        // type
+        if let type = self.typeInfer_signature(receiver: nil, parameters: node.parameters, results: node.result) {
+            node.setType(type: type)
+        }
+        
     }
     
     override func visit_function_declaration(_ node: goast_function_declaration) {
@@ -174,6 +360,14 @@ class GoDeclVisiter: GoVisiter {
                 SymbolPosition(file: self.fileObject, node: name)
             ])
         }
+        
+        // Type
+        if let type = self.typeInfer_signature(receiver: nil, parameters: node.parameters, results: node.result) {
+            if let name = node.name {
+                name.setType(type: type)
+            }
+        }
+        
     }
     
     override func visit_identifier(_ node: goast_identifier) {
@@ -251,10 +445,11 @@ class GoDeclVisiter: GoVisiter {
     
     override func visit_method_declaration(_ node: goast_method_declaration) {
         self.pushScope("MethodDeclaration")
-        super.visit_method_declaration(node)
-        self.popScope()
+        defer {
+            self.popScope()
+        }
         
-        // 对于Method我们不做name的处理，因为实际上name属于receiver
+        super.visit_method_declaration(node)
     }
     
     override func visit_package_identifier(_ node: goast_package_identifier) {
@@ -271,8 +466,16 @@ class GoDeclVisiter: GoVisiter {
     
     override func visit_function_type(_ node: goast_function_type) {
         self.pushScope("FunctionType")
+        defer {
+            self.popScope()
+        }
+        
         super.visit_function_type(node)
-        self.popScope()
+        
+        // Type
+        if let type = self.typeInfer_signature(receiver: nil, parameters: node.parameters, results: node.result) {
+            node.setType(type: type)
+        }
     }
     
     override func visit_method_spec_list(_ node: goast_method_spec_list) {
@@ -309,27 +512,39 @@ class GoDeclVisiter: GoVisiter {
     override func visit_short_var_declaration(_ node: goast_short_var_declaration) {
         super.visit_short_var_declaration(node)
         
+        var isDef = true
         if let left = node.left {
             if let right = node.right {
                 let op = self.cu.codesBetweenPos(left.pos, right.pos).trimmingCharacters(in: .whitespacesAndNewlines)
                 if op != ":=" {
-                    return
+                    isDef = false
                 }
             }
             
-            let identifiers = left.finds(t: goast_identifier.self)
-            for identifier in identifiers {
-                let name = identifier as! goast_identifier
-                if self.currentScope.find(name: self.cu.codes(pos: name.pos)) != nil && identifiers.count > 1 {
-                    // 如果name已经有定义了并且左侧变量个数大于1
-                } else {
-                    self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-                    name.setDeclarations([
-                        SymbolPosition(file: self.fileObject, node: name)
-                    ])
+            if isDef {
+                let identifiers = left.finds(t: goast_identifier.self)
+                for identifier in identifiers {
+                    let name = identifier as! goast_identifier
+                    if self.currentScope.find(name: self.cu.codes(pos: name.pos)) != nil && identifiers.count > 1 {
+                        // 如果name已经有定义了并且左侧变量个数大于1
+                    } else {
+                        self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
+                        name.setDeclarations([
+                            SymbolPosition(file: self.fileObject, node: name)
+                        ])
+                    }
                 }
             }
         }
+        
+        // Type
+        guard let left = node.left else {
+            return
+        }
+        guard let right = node.right else {
+            return
+        }
+        self.typeInfer_assign_right_to_left(left: left, right: right)
     }
     
     override func visit_source_file(_ node: goast_source_file) {
@@ -358,7 +573,35 @@ class GoDeclVisiter: GoVisiter {
     
     override func visit_type_case(_ node: goast_type_case) {
         self.pushScope("TypeCase")
-        super.visit_type_case(node)
+        
+        // Visit
+        for ast in node.type {
+            self.visit__type(ast)
+        }
+        
+        // Type
+        if node.type.count == 1 {
+            if let type = node.type[0].getType() as? GoType {
+                if let v = self.tssVStack.last as? goast_identifier {
+                    v.setType(type: type)
+                }
+            }
+        }
+
+        for ast in node.children {
+            self.visit__statement(ast)
+        }
+
+        if self.handleError {
+            for node in node.errors {
+                self.visit_ast(node)
+            }
+        }
+        
+        if let v = self.tssVStack.last as? goast_identifier {
+            v.clearType()
+        }
+        
         self.popScope()
     }
     
@@ -398,6 +641,13 @@ class GoDeclVisiter: GoVisiter {
                 SymbolPosition(file: self.fileObject, node: decl)
             ])
         }
+        
+        // Type
+        if let decl = self.currentScope.find(name: name) as? UASTExpr {
+            if let type = decl.getType() as? GoType {
+                node.setType(type: type)
+            }
+        }
     }
     
     override func visit_type_switch_statement(_ node: goast_type_switch_statement) {
@@ -419,6 +669,15 @@ class GoDeclVisiter: GoVisiter {
                     SymbolPosition(file: self.fileObject, node: name)
                 ])
             }
+            
+            // Type
+            if identifiers.count == 1 {
+                self.tssVStack.append((identifiers[0] as! goast_identifier))
+            } else {
+                self.tssVStack.append(nil)
+            }
+        } else {
+            self.tssVStack.append(nil)
         }
 
         if let ast = node.value {
@@ -434,6 +693,10 @@ class GoDeclVisiter: GoVisiter {
                 self.visit_ast(node)
             }
         }
+        
+        // Type
+        _ = self.tssVStack.popLast()
+    
         self.popScope()
     }
     
@@ -462,29 +725,108 @@ class GoDeclVisiter: GoVisiter {
                 SymbolPosition(file: self.fileObject, node: name)
             ])
         }
+        
+        // Type
+        if let type = node.type?.getType() as? GoType {
+            if let name = node.name {
+                name.setType(type: type)
+            }
+        }
     }
     
     override func visit_range_clause(_ node: goast_range_clause) {
         super.visit_range_clause(node)
         
+        var isDef = true
         if let left = node.left {
             if let right = node.right {
                 let op = self.cu.codesBetweenPos(left.pos, right.pos).trimmingCharacters(in: .whitespacesAndNewlines)
                 if !op.contains(":=") {
-                    return
+                    isDef = false
                 }
             }
             
-            let identifiers = left.finds(t: goast_identifier.self)
-            for identifier in identifiers {
-                let name = identifier as! goast_identifier
-                if self.currentScope.find(name: self.cu.codes(pos: name.pos)) != nil && identifiers.count > 1 {
-                    // 如果name已经有定义了并且左侧变量个数大于1
-                } else {
-                    self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-                    name.setDeclarations([
-                        SymbolPosition(file: self.fileObject, node: name)
-                    ])
+            if isDef {
+                let identifiers = left.finds(t: goast_identifier.self)
+                for identifier in identifiers {
+                    let name = identifier as! goast_identifier
+                    if self.currentScope.find(name: self.cu.codes(pos: name.pos)) != nil && identifiers.count > 1 {
+                        // 如果name已经有定义了并且左侧变量个数大于1
+                    } else {
+                        self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
+                        name.setDeclarations([
+                            SymbolPosition(file: self.fileObject, node: name)
+                        ])
+                    }
+                }
+            }
+            
+        }
+        
+        // Type
+        guard let right = node.right else {
+            return
+        }
+        if let left = node.left {
+            if left.children.count == 1 {
+                switch right.getType() {
+                case _ as GoArrayType:
+                    if let ident = left.children[0] as? goast_identifier {
+                        ident.setType(type: GoBasicType(kind: .int))
+                    }
+                case _ as GoSliceType:
+                    if let ident = left.children[0] as? goast_identifier {
+                        ident.setType(type: GoBasicType(kind: .int))
+                    }
+                case let rangeType as GoMapType:
+                    if let ident = left.children[0] as? goast_identifier {
+                        ident.setType(type: rangeType.key)
+                    }
+                case _ as GoBasicType:
+                    if let ident = left.children[0] as? goast_identifier {
+                        ident.setType(type: GoBasicType(kind: .int))
+                    }
+                default:
+                    break
+                }
+            } else if left.children.count == 2 {
+                switch right.getType() {
+                case let rangeType as GoArrayType:
+                    if let ident = left.children[0] as? goast_identifier {
+                        ident.setType(type: GoBasicType(kind: .int))
+                    }
+                    if let value = left.children[1] as? goast_identifier {
+                        value.setType(type: rangeType.elem)
+                    }
+                case let rangeType as GoSliceType:
+                    if let ident = left.children[0] as? goast_identifier {
+                        ident.setType(type: GoBasicType(kind: .int))
+                    }
+                    if let value = left.children[1] as? goast_identifier {
+                        value.setType(type: rangeType.elem)
+                    }
+                case let rangeType as GoMapType:
+                    if let ident = left.children[0] as? goast_identifier {
+                        ident.setType(type: rangeType.key)
+                    }
+                    if let value = left.children[1] as? goast_identifier {
+                        value.setType(type: rangeType.elem)
+                    }
+                case let rangeType as GoBasicType:
+                    if let ident = left.children[0] as? goast_identifier {
+                        ident.setType(type: GoBasicType(kind: .int))
+                    }
+                    if rangeType.kind == .string {
+                        if let value = left.children[1] as? goast_identifier {
+                            value.setType(type: GoBasicType(kind: .string))
+                        }
+                    } else if rangeType.kind == .int  {
+                        if let value = left.children[1] as? goast_identifier {
+                            value.setType(type: GoBasicType(kind: .int))
+                        }
+                    }
+                default:
+                    break
                 }
             }
         }
@@ -532,6 +874,15 @@ class GoDeclVisiter: GoVisiter {
                 }
             }
         }
+        
+        // Type
+        guard let right = node.right else {
+            return
+        }
+        guard let left = node.left else {
+            return
+        }
+        self.typeInfer_assign_right_to_left(left: left, right: right)
     }
     
     override func visit_array_type(_ node: goast_array_type) {
@@ -794,26 +1145,43 @@ class GoDeclVisiter: GoVisiter {
         node.setType(type: type)
     }
     
+    override func visit_var_spec(_ node: goast_var_spec) {
+        super.visit_var_spec(node)
+        
+        // Type
+        if let type = node.type?.getType() as? GoType {
+            for name in node.name {
+                name.setType(type: type)
+            }
+        } else if let exprList = node.value {
+            self.typeInfer_assign_right_to_left(left: node.name, right: exprList)
+        }
+    }
+    
+    override func visit_type_spec(_ node: goast_type_spec) {
+        super.visit_type_spec(node)
+        
+        // Type
+        guard let type = node.type?.getType() as? GoType else {
+            return
+        }
+        guard let name = node.name else {
+            return
+        }
+        name.setType(type: type)
+    }
+    
+    override func visit_type_assertion_expression(_ node: goast_type_assertion_expression) {
+        super.visit_type_assertion_expression(node)
+        
+        // Type
+        guard let type = node.type?.getType() as? GoType else {
+            return
+        }
+        node.setType(type: type)
+    }
     
     // TODO
-    // visit_func_literal
-    // visit_function_declaration
-    // visit_function_type
-    // visit_interface_type
-    // visit_method_declaration
-    // visit_parameter_list
-    // visit_range_clause
-    // visit_receive_statement
-    // visit_short_var_declaration
-    // visit_struct_type
-    // visit_type_assertion_expression
-    // visit_type_declaration
-    // visit_type_identifier
-    // visit_type_spec
-    // visit_type_switch_statement
-    // visit_var_declaration
-    // visit_var_spec
-    // visit_variadic_parameter_declaration
-    // identifier的重名定义处理
+    // identifier的重名定义处理(包括named type)
     
 }
