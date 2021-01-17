@@ -45,7 +45,7 @@ class goast__expression: goast__simple_statement, UASTExpr {
         return self._type
     }
     
-    func setType(type: GoType) {
+    func setType(type: GoType?) {
         self._type = type
     }
     

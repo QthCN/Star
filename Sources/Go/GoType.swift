@@ -10,7 +10,10 @@ import Common
 
 
 class GoType: Type {
-    
+    // 当前该type是否已经完整，对于完整的type来说不需要再进行类型推断
+    func complete() -> Bool {
+        return false
+    }
 }
 
 
@@ -47,16 +50,21 @@ class GoUnknownType: GoType {
 }
 
 class GoBasicType: GoType {
-    let kind: GoBasicKind
+    var kind: GoBasicKind
     
     init(kind: GoBasicKind) {
         self.kind = kind
     }
+    
+    override func complete() -> Bool {
+        return true
+    }
 }
 
 class GoArrayType: GoType {
-    let len: Int?
-    let elem: GoType
+    private var _complete: Bool = false
+    var len: Int?
+    var elem: GoType?
     
     init(len: Int, elem: GoType) {
         self.len = len
@@ -67,105 +75,254 @@ class GoArrayType: GoType {
         self.len = nil
         self.elem = elem
     }
+    
+    init(len: Int) {
+        self.len = len
+        self.elem = nil
+    }
+    
+    override func complete() -> Bool {
+        if self._complete {
+            return self._complete
+        }
+        self._complete = self.len != nil && self.elem != nil && self.elem!.complete()
+        return self._complete
+    }
 }
 
 class GoSliceType: GoType {
-    let elem: GoType
+    private var _complete: Bool = false
+    var elem: GoType?
     
     init(elem: GoType) {
         self.elem = elem
+    }
+    
+    override func complete() -> Bool {
+        if self._complete {
+            return self._complete
+        }
+        self._complete = self.elem != nil && self.elem!.complete()
+        return self._complete
     }
 }
 
 
 enum GoVarSituation {
+    // stuct的field
     case field
+    // 函数参数或者是返回类型参数
     case param
-    case variable
 }
 
 
 class GoVar {
-    let name: String
-    let typ: GoType?
-    let situation: GoVarSituation
+    private var _complete: Bool = false
+    var name: String?
+    var typ: GoType?
+    var situation: GoVarSituation
+    
+    init() {
+        self.name = nil
+        self.typ = nil
+        self.situation = .field
+    }
     
     init(name: String, typ: GoType, situation: GoVarSituation) {
         self.name = name
         self.typ = typ
         self.situation = situation
     }
+    
+    init(typ: GoType, situation: GoVarSituation) {
+        self.name = nil
+        self.typ = typ
+        self.situation = situation
+    }
+    
+    func complete() -> Bool {
+        if self._complete {
+            return self._complete
+        }
+        self._complete = self.name != nil && self.typ != nil && self.typ!.complete()
+        return self._complete
+    }
 }
 
 
 class GoStructType: GoType {
-    let fields: [GoVar]
+    private var _complete: Bool = false
+    var fields: [GoVar] = []
     
     init(fields: [GoVar]) {
         self.fields = fields
+    }
+    
+    func addField(field: GoVar) {
+        self.fields.append(field)
+        self._complete = self._complete && field.complete()
+    }
+    
+    override func complete() -> Bool {
+        if self._complete {
+            return self._complete
+        }
+        
+        for f in fields {
+            if f.complete() == false {
+                return false
+            }
+        }
+        
+        self._complete = true
+        return self._complete
     }
 }
 
 
 class GoPointerType: GoType {
-    let base: GoType
+    private var _complete: Bool = false
+    var base: GoType?
     
     init(base: GoType) {
         self.base = base
     }
+    
+    override func complete() -> Bool {
+        if self._complete {
+            return self._complete
+        }
+        self._complete = self.base != nil && self.base!.complete()
+        return self._complete
+    }
 }
 
 class GoTupleType: GoType {
-    let vars: [GoVar]
+    private var _complete: Bool = false
+    var vars: [GoVar] = []
     
     init(vars: [GoVar]) {
         self.vars = vars
     }
+    
+    override func complete() -> Bool {
+        if self._complete {
+            return self._complete
+        }
+        
+        for v in self.vars {
+            if v.complete() == false {
+                return false
+            }
+        }
+        
+        self._complete = true
+        return self._complete
+    }
 }
 
 class GoSignatureType: GoType {
-    let recv: GoVar?
-    let params: GoTupleType
-    let results: GoTupleType
-    let variadic: Bool
+    private var _complete: Bool = false
+    var recv: GoVar?
+    var params: GoTupleType?
+    var results: GoTupleType?
+    var variadic: Bool = false
     
-    init(recv: GoVar?, params: GoTupleType, results: GoTupleType, variadic: Bool) {
+    init(recv: GoVar, params: GoTupleType, results: GoTupleType, variadic: Bool) {
         self.recv = recv
         self.params = params
         self.results = results
         self.variadic = variadic
     }
+    
+    override func complete() -> Bool {
+        if self._complete {
+            return self._complete
+        }
+        self._complete = self.recv != nil && self.recv!.complete() && self.params != nil && self.params!.complete() && self.results != nil && self.results!.complete()
+        return self._complete
+    }
 }
 
 
 class GoFunc {
-    let name: String
-    let sig: GoSignatureType
+    private var _complete: Bool = false
+    var name: String
+    var sig: GoSignatureType
     
     init(name: String, sig: GoSignatureType) {
         self.name = name
         self.sig = sig
     }
+    
+    func complete() -> Bool {
+        if self._complete {
+            return self._complete
+        }
+        self._complete = self.sig.complete()
+        return self._complete
+    }
 }
 
 class GoInterfaceType: GoType {
-    let methods: [GoFunc]
-    let embeddeds: [GoType]
+    private var _complete: Bool = false
+    var methods: [GoFunc] = []
+    var embeddeds: [GoType] = []
     
     init(methods: [GoFunc], embeddeds: [GoType]) {
         self.methods = methods
         self.embeddeds = embeddeds
     }
+    
+    func addMethod(method: GoFunc) {
+        self.methods.append(method)
+        self._complete = self._complete && method.complete()
+    }
+    
+    func addEmbeded(embeded: GoType) {
+        self.embeddeds.append(embeded)
+        self._complete = self._complete && embeded.complete()
+    }
+    
+    override func complete() -> Bool {
+        if self._complete {
+            return self._complete
+        }
+        
+        for m in self.methods {
+            if m.complete() == false {
+                return false
+            }
+        }
+        
+        for e in self.embeddeds {
+            if e.complete() == false {
+                return false
+            }
+        }
+        
+        self._complete = true
+        return self._complete
+    }
 }
 
 
 class GoMapType: GoType {
-    let key: GoType
-    let elem: GoType
+    private var _complete: Bool = false
+    var key: GoType?
+    var elem: GoType?
     
     init(key: GoType, elem: GoType) {
         self.key = key
         self.elem = elem
+    }
+    
+    override func complete() -> Bool {
+        if self._complete {
+            return self._complete
+        }
+        self._complete = self.key != nil && self.key!.complete() && self.elem != nil && self.elem!.complete()
+        return self._complete
     }
 }
 
@@ -176,35 +333,54 @@ enum GoChanDir {
 }
 
 class GoChanType: GoType {
-    let dir: GoChanDir
-    let elem: GoType
+    private var _complete: Bool = false
+    var dir: GoChanDir
+    var elem: GoType?
     
     init(dir: GoChanDir, elem: GoType) {
         self.dir = dir
         self.elem = elem
     }
-}
-
-class GoTypeName {
-    let name: String
-    let typ: GoType
     
-    init(name: String, typ: GoType) {
-        self.name = name
-        self.typ = typ
+    override func complete() -> Bool {
+        if self._complete {
+            return self._complete
+        }
+        self._complete = self.elem != nil && self.elem!.complete()
+        return self._complete
     }
 }
 
+
 class GoNamedType: GoType {
-    let obj: GoTypeName
-    let orig: GoType
-    let underling: GoType
-    let methods: [GoFunc]
+    private var _complete: Bool = false
+    var name: String?
+    var typ: GoType?
+    var methods: [GoFunc] = []
     
-    init(obj: GoTypeName, orig: GoType, underling: GoType, methods: [GoFunc]) {
-        self.obj = obj
-        self.orig = orig
-        self.underling = underling
+    init(name: String, typ: GoType, methods: [GoFunc]) {
+        self.name = name
+        self.typ = typ
         self.methods = methods
+    }
+    
+    func addMethod(method: GoFunc) {
+        self.methods.append(method)
+        self._complete = self._complete && method.complete()
+    }
+    
+    override func complete() -> Bool {
+        if self.name != nil && self.typ != nil && self.typ!.complete() == false {
+            return false
+        }
+        
+        for f in self.methods {
+            if f.complete() == false {
+                return false
+            }
+        }
+        
+        self._complete = true
+        return self._complete
     }
 }
