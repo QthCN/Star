@@ -13,6 +13,10 @@ public class GoPackage {
     var name: String = ""
     var files: [String:CompilationUnion] = [:]
     let scope: Scope = Scope(parent: nil, name: "Package")
+    // 该package import的其它package。路径为被import的package的path
+    var imports: [String] = []
+    // 这个package下top scope的method，临时在这里存放，在第二阶段会和对应的type name关联
+    var methods_to_bind: [goast_method_declaration] = []
     
     init() {
     }

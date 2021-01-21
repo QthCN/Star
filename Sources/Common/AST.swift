@@ -89,7 +89,7 @@ public class SymbolPosition: CustomStringConvertible, Equatable {
     var line: Int
     // 从0开始
     var col: Int
-    var node: AST
+    weak var node: AST! = nil
 
     public init(file: FileSystemObject, line: Int, col: Int, node: AST) {
         self.file = file
@@ -107,7 +107,7 @@ public class SymbolPosition: CustomStringConvertible, Equatable {
 
     public var description: String {
         // 注意，这里为了方便debug都是从1开始
-        return "\(file)[\(line+1):\(col+1)](\(node))"
+        return "\(file)[\(line+1):\(col+1)])"
     }
     
     public static func == (lhs: SymbolPosition, rhs: SymbolPosition) -> Bool {

@@ -10,6 +10,12 @@ import Common
 
 
 class GoType: Type {
+    var symbolPosition: SymbolPosition? = nil
+    
+    func position() -> SymbolPosition? {
+        return self.symbolPosition
+    }
+    
     // 当前该type是否已经完整，对于完整的type来说不需要再进行类型推断
     func complete() -> Bool {
         return false
@@ -355,11 +361,13 @@ class GoChanType: GoType {
 class GoNamedType: GoType {
     private var _complete: Bool = false
     var name: String?
+    var pkg: GoPackage?
     var typ: GoType?
     var methods: [GoFunc] = []
     
-    init(name: String, typ: GoType, methods: [GoFunc]) {
+    init(name: String, pkg: GoPackage, typ: GoType, methods: [GoFunc]) {
         self.name = name
+        self.pkg = pkg
         self.typ = typ
         self.methods = methods
     }
