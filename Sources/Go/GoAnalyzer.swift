@@ -66,6 +66,12 @@ public class GoAnalyzer: Analyzer {
         
         // 生成package信息
         self.analysisPackages(FileSystemObject())
+        
+        // 生成import依赖图
+        
+        // 生成type definition信息
+        
+        // 生成expr的type和identifier的resolve信息
     }
     
     func analysisPackages(_ dir: FileSystemObject) {
@@ -100,7 +106,6 @@ public class GoAnalyzer: Analyzer {
     
     func analysisPackage(_ directory: FileSystemObject, _ package: GoPackage) {
         let dirItems = self.fs.listItems(path: directory)
-        print("analysis \(directory.rpath())")
         // 设置同一个package下的parser共用同一个scope
         let parser = GoParser()
         parser.scope = package.scope
@@ -121,7 +126,7 @@ public class GoAnalyzer: Analyzer {
                     }
                     
                     // 对文件进行decl分析
-                    let declVisiter = GoDeclVisiter(cu: cu, pkgScope: package.scope, fileObject: dirItem)
+                    let declVisiter = GoDeclVisiter(cu: cu, pkg: package, pkgScope: package.scope, fileObject: dirItem)
                     declVisiter.visit_ast(cu.getAST()! as! GoAST)
                 }
             }

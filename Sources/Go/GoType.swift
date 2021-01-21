@@ -241,6 +241,10 @@ class GoSignatureType: GoType {
         self.variadic = variadic
     }
     
+    override init() {
+        super.init()
+    }
+    
     override func complete() -> Bool {
         if self._complete {
             return self._complete
@@ -251,21 +255,25 @@ class GoSignatureType: GoType {
 }
 
 
-class GoFunc {
+class GoFunc: GoType {
     private var _complete: Bool = false
     var name: String
-    var sig: GoSignatureType
+    var sig: GoSignatureType?
     
     init(name: String, sig: GoSignatureType) {
         self.name = name
         self.sig = sig
     }
     
-    func complete() -> Bool {
+    init(name: String) {
+        self.name = name
+    }
+    
+    override func complete() -> Bool {
         if self._complete {
             return self._complete
         }
-        self._complete = self.sig.complete()
+        self._complete = self.sig != nil && self.sig!.complete()
         return self._complete
     }
 }
@@ -363,9 +371,10 @@ class GoNamedType: GoType {
     var name: String?
     var pkg: GoPackage?
     var typ: GoType?
+    var isAlias: Bool = false
     var methods: [GoFunc] = []
     
-    init(name: String, pkg: GoPackage, typ: GoType, methods: [GoFunc]) {
+    init(name: String, pkg: GoPackage, typ: GoType? = nil, methods: [GoFunc] = []) {
         self.name = name
         self.pkg = pkg
         self.typ = typ
