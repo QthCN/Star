@@ -18,6 +18,10 @@ public class GoAnalyzer: Analyzer {
     /// 分析结果
     // package列表 key为路径
     var packages: [String:GoPackage] = [:]
+    // GoMod文件
+    var goMod: GoMod?
+    // module前缀
+    var modulePrefix: String = ""
     
     // 清理分析结果
     func reset() {
@@ -64,14 +68,34 @@ public class GoAnalyzer: Analyzer {
             return
         }
         
+        // 判断是否存在go.mod
+        if let goModFile = self.fs.listItemsByName(path: FileSystemObject(), name: "go.mod") {
+            if let content = self.fs.getFileContent(item: goModFile) {
+                self.goMod = GoMod(f: goModFile, c: content)
+                self.modulePrefix = self.goMod?.module() ?? ""
+            }
+        }
+        
         // 生成package信息
         self.analysisPackages(FileSystemObject())
         
         // 生成import依赖图
+        self.analysisImportDependGraph()
         
         // 生成type definition信息
+        self.analysisTypeInfo()
         
         // 生成expr的type和identifier的resolve信息
+    }
+    
+    func analysisImportDependGraph() {
+        for (_, pkg) in self.packages {
+            for importPath in pkg.imports {
+                if let importPkg = self.packages[importPath] {
+                    pkg.depPackages.append(importPkg)
+                }
+            }
+        }
     }
     
     func analysisPackages(_ dir: FileSystemObject) {
@@ -83,7 +107,8 @@ public class GoAnalyzer: Analyzer {
         
         // 判断package是否有效
         if package.valid() {
-            self.packages[dir.rpath()] = package
+            self.packages["\(self.modulePrefix)/\(dir.rpath())"] = package
+            package.path = dir.rpath()
         }
         
         // 分析子目录中的package
@@ -114,6 +139,11 @@ public class GoAnalyzer: Analyzer {
                 continue
             }
             
+            // TODO 暂时忽略测试文件
+            if dirItem.objName().hasSuffix("_test.go") {
+                continue
+            }
+            
             if let content = self.fs.getFileContent(item: dirItem) {
                 let cu = parser.parse(content: content)
                 if cu.getAST() != nil {
@@ -134,7 +164,60 @@ public class GoAnalyzer: Analyzer {
         }
     }
     
+    private func isPkgCanDoTypeInfoAnalysis(pkg: GoPackage) -> Bool {
+        if pkg.typeInfoAnalysised == true {
+            return false
+        }
+        
+        if pkg.depPackages.count == 0 {
+            return true
+        }
+        
+        for dp in pkg.depPackages {
+            if dp.typeInfoAnalysised == false {
+                return false
+            }
+        }
+        
+        return true
+    }
+    
+    func analysisTypeInfoOnPkg(pkg: GoPackage) {
+        print("analysis type info on: \(pkg.path)")
+    }
+    
     func analysisTypeInfo() {
-        // TODO
+        // 从底层package开始从下往上处理。每次处理时从package中挑选 没有depPackage的 或者 所有的depPackage都已经被处理 的package进行处理
+        var pkgs: [GoPackage] = []
+        while true {
+            // 执行分析
+            let group = DispatchGroup()
+            for pkg in pkgs {
+                group.enter()
+                self.queue.async {
+                    self.analysisTypeInfoOnPkg(pkg: pkg)
+                    group.leave()
+                }
+            }
+            group.wait()
+            
+            // 标记为已经分析
+            for pkg in pkgs {
+                pkg.typeInfoAnalysised = true
+            }
+            
+            pkgs = []
+            
+            // 获取下一批
+            for (_, pkg) in self.packages {
+                if isPkgCanDoTypeInfoAnalysis(pkg: pkg) {
+                    pkgs.append(pkg)
+                }
+            }
+            
+            if pkgs.count == 0 {
+                break
+            }
+        }
     }
 }

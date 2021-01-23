@@ -15,8 +15,10 @@ public class GoPackage {
     let scope: Scope = Scope(parent: nil, name: "Package")
     // 该package import的其它package的path的string。
     var imports: [String] = []
-    // 这个package下top scope的method，临时在这里存放，在第二阶段会和对应的type name关联
-    var methods_to_bind: [goast_method_declaration] = []
+    // 该package依赖的当前repo中的package，最底层的package这里为空
+    var depPackages: [GoPackage] = []
+    // 该package是否已经被type info分析过
+    var typeInfoAnalysised: Bool = false
     
     init() {
     }
@@ -38,8 +40,9 @@ public class GoPackage {
     }
     
     func addImport(path: String) {
-        if !self.imports.contains(path) {
-            self.imports.append(path)
+        let p = path.trimmingCharacters(in: ["\""])
+        if !self.imports.contains(p) {
+            self.imports.append(p)
         }
     }
 }

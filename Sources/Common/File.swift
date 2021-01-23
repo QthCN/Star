@@ -61,6 +61,8 @@ public protocol FileSystem {
     func getFileContent(item: FileSystemObject) -> String?
     // 列出目录下对象
     func listItems(path: FileSystemObject) -> [FileSystemObject]
+    // 列出目录下特定名字的对象
+    func listItemsByName(path: FileSystemObject, name: String) -> FileSystemObject?
 }
 
 
@@ -93,6 +95,16 @@ public class MacFileSystem: FileSystem {
         }
 
 
+    }
+    
+    public func listItemsByName(path: FileSystemObject, name: String) -> FileSystemObject? {
+        let items = self.listItems(path: path)
+        for item in items {
+            if item.name == name {
+                return item
+            }
+        }
+        return nil
     }
 
     public func listItems(path: FileSystemObject) -> [FileSystemObject] {
