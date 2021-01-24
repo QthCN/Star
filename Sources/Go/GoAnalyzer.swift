@@ -62,6 +62,19 @@ public class GoAnalyzer: Analyzer {
         return false
     }
     
+    func getPackageByPath(p: String) -> GoPackage? {
+        return self.packages[p]
+    }
+    
+    func getPackageByName(n: String) -> GoPackage? {
+        for (_, pkg) in self.packages {
+            if pkg.name == n {
+                return pkg
+            }
+        }
+        return nil
+    }
+    
     func analysis() {
         // 判断是否是一个go的项目
         if !self.isGoProject() {
@@ -99,8 +112,7 @@ public class GoAnalyzer: Analyzer {
     }
     
     func analysisPackages(_ dir: FileSystemObject) {
-        
-        let package = GoPackage()
+        let package = GoPackage(analyzer: self)
         // 分析这个package
         self.analysisPackage(dir, package)
         
@@ -113,19 +125,13 @@ public class GoAnalyzer: Analyzer {
         
         // 分析子目录中的package
         let subDirItems = self.fs.listItems(path: dir)
-        let group = DispatchGroup()
         for subDirItem in subDirItems {
             if !subDirItem.dir() || ignoreDirs.contains(subDirItem.objName()) {
                 continue
             }
             
-            group.enter()
-            self.queue.async {
-                self.analysisPackages(subDirItem)
-                group.leave()
-            }
+            self.analysisPackages(subDirItem)
         }
-        group.wait()
         
     }
     
@@ -147,7 +153,7 @@ public class GoAnalyzer: Analyzer {
             if let content = self.fs.getFileContent(item: dirItem) {
                 let cu = parser.parse(content: content)
                 if cu.getAST() != nil {
-                    package.addFile(name: dirItem.objName(), cu: cu)
+                    package.addFile(name: dirItem.objName(), cu: cu, fileObj: dirItem)
                     
                     if package.name == "" {
                         if let package_identifier = cu.getAST()?.find(t: goast_package_identifier.self) {
@@ -183,7 +189,10 @@ public class GoAnalyzer: Analyzer {
     }
     
     func analysisTypeInfoOnPkg(pkg: GoPackage) {
-        print("analysis type info on: \(pkg.path)")
+        for (path, cu) in pkg.files {
+            let typeVisiter = GoTypeVisiter(cu: cu, pkg: pkg, file: pkg.fileObjs[path]!)
+            typeVisiter.visit_ast(cu.getAST()! as! GoAST)
+        }
     }
     
     func analysisTypeInfo() {

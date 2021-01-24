@@ -28,6 +28,10 @@ open class AST: CustomStringConvertible {
         self.scope = scope
     }
     
+    public func getScope() -> Scope? {
+        return self.scope
+    }
+    
     public func find<T> (t: T) -> AST? {
         if type(of: self) is T {
             return self
@@ -112,6 +116,10 @@ public class SymbolPosition: CustomStringConvertible, Equatable {
     
     public static func == (lhs: SymbolPosition, rhs: SymbolPosition) -> Bool {
         return lhs.line == rhs.line && lhs.col == rhs.col && lhs.file == rhs.file
+    }
+    
+    public func getNode() -> AST? {
+        return self.node
     }
 }
 

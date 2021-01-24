@@ -96,7 +96,7 @@ final class GoAnalyzerTests: XCTestCase {
     
     func testDeclTidbAnalysis() {
         let config = Configuration()
-        let GO_TIDB_REPO_PATH = "/Users/qintianhuan/Workspace/openSourceProjects/tidb"
+        let GO_TIDB_REPO_PATH = "/Users/qintianhuan/Workspace/openSourceProjects/sourcegraph"
         let fs = MacFileSystem(rootDir: GO_TIDB_REPO_PATH)
         analyzer.analysis(fs: fs, config: config)
         XCTAssertEqual(analyzer.isGoProject(), true)
@@ -108,11 +108,11 @@ final class GoAnalyzerTests: XCTestCase {
         analyzer.analysis(fs: fs, config: config)
         XCTAssertEqual(analyzer.isGoProject(), true)
         let packages = analyzer.listPackages()
-        let package = packages[""]!
+        let package = packages["/"]!
         let cu = package.getFile(name: "main.go")!
         let ast = cu.getAST()!
-        let scope = package.scope
-        scope.dump()
+        //let scope = package.scope
+        //scope.dump()
         
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "ast", line: 3, col: 8, sIdx: 1))
         
@@ -195,7 +195,7 @@ final class GoAnalyzerTests: XCTestCase {
         
         let identifiers = finds_UASTIdentifier(ast: ast)
         for identifier in identifiers {
-            print(identifier, identifier.listDeclarations())
+            //print(identifier, identifier.listDeclarations())
         }
     }
     

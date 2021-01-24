@@ -10,883 +10,87 @@ import Common
 
 
 // 执行分析，分析的结果存在AST节点中
-//  - 单文件scope的Type分析
+//  - 单文件scope的Type分析。在之前的分析中所有namedtype都关联到了对应的结构体，因此在这里对所有type信息进行关联
 
 class GoTypeVisiter: GoVisiter {
     
-    var cu: CompilationUnion
-    var pkgScope: Scope
-    var currentScope: Scope
-    var fileObject: FileSystemObject
-    // TypeSwitchStatement的变量
-    var tssVStack: [goast_identifier?] = []
+    weak var pkg: GoPackage!
+    weak var cu: CompilationUnion!
+    weak var file: FileSystemObject!
     
     
-    init(cu: CompilationUnion, pkgScope: Scope, fileObject: FileSystemObject) {
+    init(cu: CompilationUnion, pkg: GoPackage, file: FileSystemObject) {
         self.cu = cu
-        self.pkgScope = pkgScope
-        self.fileObject = fileObject
-        self.currentScope = Scope(parent: self.pkgScope, name: "File")
+        self.pkg = pkg
+        self.file = file
         super.init()
-        self.handleError = true
     }
     
-    func pushScope(_ name: String = "Anonymous") {
-        let newScope = Scope(parent: self.currentScope, name: name)
-        self.currentScope = newScope
-    }
-    
-    func popScope() {
-        self.currentScope = self.currentScope.parent ?? self.currentScope
-    }
-    
-    func typeInfer_signature_parameter_list(parameter_list: goast_parameter_list?) -> (GoTupleType, Bool) {
-        var hasVariadicParameter = false
-        if parameter_list == nil {
-            return (GoTupleType(vars: []), hasVariadicParameter)
-        }
-        
-        var vars: [GoVar] = []
-        for child in parameter_list!.children {
-            switch child {
-            case let node as goast_parameter_declaration:
-                if let type = node.type?.getType() as? GoType {
-                    for ident in node.name {
-                        let v = GoVar(name: self.cu.codes(pos: ident.pos), typ: type, situation: .param)
-                        vars.append(v)
-                    }
-                }
-            case let node as goast_variadic_parameter_declaration:
-                hasVariadicParameter = true
-                if let type = node.type?.getType() as? GoType {
-                    if let ident = node.name {
-                        let v = GoVar(name: self.cu.codes(pos: ident.pos), typ: type, situation: .param)
-                        vars.append(v)
-                    }
-                }
-            default:
-                break
-            }
-        }
-        
-        return (GoTupleType(vars: vars), hasVariadicParameter)
-    }
-    
-    // 处理Func Signature
-    func typeInfer_signature(receiver: goast_parameter_list?, parameters: goast_parameter_list?, results: GoAST?) -> GoSignatureType? {
-        // 简单判断下
-        if parameters == nil {
-            return nil
-        }
-        
-        // 处理receiver
-        let (recv, _) = self.typeInfer_signature_parameter_list(parameter_list: receiver)
-        if receiver != nil && recv.vars.count != 1 {
-            // 如果receiver存在但上面没有分析出来的话就不用处理了，再多文件分析阶段会再次处理
-            return nil
-        }
-        
-        // 处理parameter
-        let (params, hasVariadicParam) = self.typeInfer_signature_parameter_list(parameter_list: parameters)
-        
-        // 处理Result
-        switch results {
-        case nil:
-            return GoSignatureType(recv: recv.vars[0], params: params, results: GoTupleType(vars: []), variadic: hasVariadicParam)
-        case let node as goast_parameter_list:
-            let (res, _) = self.typeInfer_signature_parameter_list(parameter_list: node)
-            return GoSignatureType(recv: recv.vars[0], params: params, results: res, variadic: hasVariadicParam)
+    private func handleDefaultTypes(n: String) -> GoType? {
+        let s = n.lowercased()
+        switch s {
+        case "bool":
+            return GoBasicType(kind: .bool)
+        case "int", "int8", "int16", "int32", "int64":
+            return GoBasicType(kind: .int)
+        case "uint", "uint8", "uint16", "uint32", "uint64":
+            return GoBasicType(kind: .uint)
+        case "uintptr":
+            return GoBasicType(kind: .uintptr)
+        case "float32", "float64":
+            return GoBasicType(kind: .float)
+        case "complex64", "complex128":
+            return GoBasicType(kind: .complex)
+        case "string":
+            return GoBasicType(kind: .string)
+        case "unsafepointer":
+            return GoBasicType(kind: .unsafePointer)
+        case "byte":
+            return GoBasicType(kind: .byte)
+        case "rune":
+            return GoBasicType(kind: .rune)
         default:
-            if let type = (results as? goast__simple_type)?.getType() as? GoType {
-                let resVar = GoVar(name: "", typ: type, situation: .param)
-                let res = GoTupleType(vars: [resVar])
-                return GoSignatureType(recv: recv.vars[0], params: params, results: res, variadic: hasVariadicParam)
+            return nil
+        }
+    }
+    
+    
+    private func getType(_ node: GoAST?) -> GoType? {
+        guard let typeNode = node as? UASTExpr else {
+            return nil
+        }
+        
+        if let goType = typeNode.getType() as? GoType {
+            return goType
+        }
+        
+        let s = self.cu.codes(pos: node!.pos)
+        
+        // TODO 处理int这种系统自带类型，后续这些需要放到GlobalScope中
+        if let goType = self.handleDefaultTypes(n: s) {
+            return goType
+        }
+
+        // 根据node的类型获取其type
+        switch typeNode {
+        case is goast_type_identifier:
+            if let decl = node!.getScope()?.find(name: s) as? UASTExpr {
+                return decl.getType() as? GoType
             } else {
-                return nil
-            }
-        }
-    }
-    
-    // 处理left := node这种类型的type
-    func typeInfer_assign_right_to_left(left: goast_expression_list, right: goast_expression_list) {
-        var types: [GoType] = []
-        
-        for item in right.children {
-            switch item.getType() {
-            case let itemType as GoTupleType:
-                for v in itemType.vars {
-                    types.append(v.typ ?? GoUnknownType())
-                }
-            default:
-                if let t = item.getType() as? GoType {
-                    types.append(t)
+                if let decl = self.pkg.findSymbol(name: s) {
+                    return (decl.getNode() as? UASTExpr)?.getType() as? GoType
                 } else {
-                    types.append(GoUnknownType())
+                    return nil
                 }
             }
+        default:
+            return nil
         }
-        
-        for (idx, item) in left.children.enumerated() {
-            if idx >= types.count {
-                break
-            }
-            let rightType = types[idx]
-            if rightType is GoUnknownType {
-                // pass
-            } else {
-                item.setType(type: rightType)
-            }
-        }
-    }
-    
-    func typeInfer_assign_right_to_left(left: [goast_identifier], right: goast_expression_list) {
-        var types: [GoType] = []
-        
-        for item in right.children {
-            switch item.getType() {
-            case let itemType as GoTupleType:
-                for v in itemType.vars {
-                    types.append(v.typ ?? GoUnknownType())
-                }
-            default:
-                if let t = item.getType() as? GoType {
-                    types.append(t)
-                } else {
-                    types.append(GoUnknownType())
-                }
-            }
-        }
-        
-        for (idx, item) in left.enumerated() {
-            if idx >= types.count {
-                break
-            }
-            let rightType = types[idx]
-            if rightType is GoUnknownType {
-                // pass
-            } else {
-                item.setType(type: rightType)
-            }
-        }
-    }
-    
-    func typeInfer_assign_right_to_left(left: goast_expression_list, right: goast__expression) {
-        var types: [GoType] = []
-        
-        if right is goast_type_assertion_expression {
-            guard let rightType = right.getType() as? GoType else {
-                return
-            }
-            if left.children.count == 1 {
-                if let ident = left.children[0] as? goast_identifier {
-                    ident.setType(type: rightType)
-                }
-            } else if left.children.count == 2 {
-                if let ident = left.children[0] as? goast_identifier {
-                    ident.setType(type: rightType)
-                }
-                if let ok = left.children[1] as? goast_identifier {
-                    ok.setType(type: GoBasicType(kind: .bool))
-                }
-            }
-        } else {
-            switch right.getType() {
-            case let itemType as GoTupleType:
-                for v in itemType.vars {
-                    types.append(v.typ ?? GoUnknownType())
-                }
-            default:
-                if let t = right.getType() as? GoType {
-                    types.append(t)
-                } else {
-                    types.append(GoUnknownType())
-                }
-            }
-            
-            for (idx, item) in left.children.enumerated() {
-                if idx >= types.count {
-                    break
-                }
-                let rightType = types[idx]
-                if rightType is GoUnknownType {
-                    // pass
-                } else {
-                    item.setType(type: rightType)
-                }
-            }
-        }
-    }
-    
-    override func visit_node(_ node: GoAST) {
-        super.visit_node(node)
-        node.setScope(self.currentScope)
-    }
-    
-    override func visit_block(_ node: goast_block) {
-        self.pushScope("Block")
-        super.visit_block(node)
-        self.popScope()
-    }
-    
-    
-    override func visit_communication_case(_ node: goast_communication_case) {
-        self.pushScope("CommunicationCase")
-        super.visit_communication_case(node)
-        self.popScope()
-    }
-    
-    override func visit_composite_literal(_ node: goast_composite_literal) {
-        self.pushScope("CompositeLiteral")
-        defer {
-            self.popScope()
-        }
-        
-        super.visit_composite_literal(node)
-        
-        // Type
-        guard let type = (node.type as? UASTExpr)?.getType() as? GoType else {
-            return
-        }
-        node.setType(type: type)
-        
-    }
-    
-    override func visit_const_declaration(_ node: goast_const_declaration) {
-        super.visit_const_declaration(node)
-        
-        // 处理左侧变量
-        let constSpecs = node.finds(t: goast_const_spec.self)
-        for constSpec in constSpecs {
-            let cs = constSpec as! goast_const_spec
-            for name in cs.name {
-                self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-                name.setDeclarations([
-                    SymbolPosition(file: self.fileObject, node: name)
-                ])
-            }
-        }
-    }
-    
-    override func visit_const_spec(_ node: goast_const_spec) {
-        super.visit_const_spec(node)
-        
-        // Type
-        if let type = node.type?.getType() as? GoType {
-            for name in node.name {
-                name.setType(type: type)
-            }
-        } else if let exprList = node.value {
-            for (idx, element) in node.name.enumerated() {
-                if let elementType = exprList.children[idx].getType() as? GoType {
-                    element.setType(type: elementType)
-                }
-            }
-        }
-    }
-    
-    override func visit_default_case(_ node: goast_default_case) {
-        self.pushScope("DefaultCase")
-        super.visit_default_case(node)
-        self.popScope()
-    }
-    
-    override func visit_expression_case(_ node: goast_expression_case) {
-        self.pushScope("ExpressionCase")
-        super.visit_expression_case(node)
-        self.popScope()
-    }
-    
-    override func visit_expression_switch_statement(_ node: goast_expression_switch_statement) {
-        self.pushScope("ExpressionSwitchStatement")
-        super.visit_expression_switch_statement(node)
-        self.popScope()
-    }
-    
-    override func visit_field_declaration(_ node: goast_field_declaration) {
-        super.visit_field_declaration(node)
-        
-        // 处理field_name变量
-        for name in node.name {
-            self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-            name.setDeclarations([
-                SymbolPosition(file: self.fileObject, node: name)
-            ])
-        }
-    }
-    
-    override func visit_field_identifier(_ node: goast_field_identifier) {
-        super.visit_field_identifier(node)
-        
-        // 设置文件内的decl
-        let name = self.cu.codes(pos: node.pos)
-        if let decl = self.currentScope.find(name: name) {
-            node.setDeclarations([
-                SymbolPosition(file: self.fileObject, node: decl)
-            ])
-        }
-    }
-    
-    override func visit_for_statement(_ node: goast_for_statement) {
-        self.pushScope("ForStatement")
-        super.visit_for_statement(node)
-        self.popScope()
-    }
-    
-    override func visit_func_literal(_ node: goast_func_literal) {
-        self.pushScope("FuncLiteral")
-        defer {
-            self.popScope()
-        }
-        
-        super.visit_func_literal(node)
-        
-        // type
-        if let type = self.typeInfer_signature(receiver: nil, parameters: node.parameters, results: node.result) {
-            node.setType(type: type)
-        }
-        
-    }
-    
-    override func visit_function_declaration(_ node: goast_function_declaration) {
-        self.pushScope("FunctionDeclaration")
-        super.visit_function_declaration(node)
-        self.popScope()
-        
-        if let name = node.name {
-            self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-            name.setDeclarations([
-                SymbolPosition(file: self.fileObject, node: name)
-            ])
-        }
-        
-        // Type
-        if let type = self.typeInfer_signature(receiver: nil, parameters: node.parameters, results: node.result) {
-            if let name = node.name {
-                name.setType(type: type)
-            }
-        }
-        
-    }
-    
-    override func visit_identifier(_ node: goast_identifier) {
-        super.visit_identifier(node)
-        
-        // 设置文件内的decl
-        let name = self.cu.codes(pos: node.pos)
-        if let decl = self.currentScope.find(name: name) {
-            node.setDeclarations([
-                SymbolPosition(file: self.fileObject, node: decl)
-            ])
-        }
-        
-        // Type
-        if let declType = (self.currentScope.find(name: name) as? UASTExpr)?.getType() as? GoType {
-            node.setType(type: declType)
-        }
-    }
-    
-    override func visit_if_statement(_ node: goast_if_statement) {
-        self.visit_node(node)
-        self.pushScope("IfStatement")
-        
-        if let ast = node.initializer {
-            self.visit__simple_statement(ast)
-        }
-
-        if let ast = node.condition {
-            self.visit__expression(ast)
-        }
-        
-        self.pushScope("IfConsequence")
-        if let ast = node.consequence {
-            self.visit_block(ast)
-        }
-        self.popScope()
-        
-        self.pushScope("IfAlternative")
-        if let ast = node.alternative {
-            self.visit_ast(ast)
-        }
-        self.popScope()
-        
-        if self.handleError {
-            for node in node.errors {
-                self.visit_ast(node)
-            }
-        }
-        
-        self.popScope()
-    }
-    
-    override func visit_import_declaration(_ node: goast_import_declaration) {
-        super.visit_import_declaration(node)
-        
-        // 处理goast_package_identifier
-        let goast_package_identifiers = node.finds(t: goast_package_identifier.self)
-        for identifier in goast_package_identifiers {
-            let name = identifier as! goast_package_identifier
-            self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-            name.setDeclarations([
-                SymbolPosition(file: self.fileObject, node: name)
-            ])
-        }
-    }
-    
-    override func visit_label_name(_ node: goast_label_name) {
-        super.visit_label_name(node)
-        
-        self.currentScope.declare(name: self.cu.codes(pos: node.pos), node: node)
-        node.setDeclarations([
-            SymbolPosition(file: self.fileObject, node: node)
-        ])
-    }
-    
-    override func visit_method_declaration(_ node: goast_method_declaration) {
-        self.pushScope("MethodDeclaration")
-        defer {
-            self.popScope()
-        }
-        
-        super.visit_method_declaration(node)
-    }
-    
-    override func visit_package_identifier(_ node: goast_package_identifier) {
-        super.visit_package_identifier(node)
-        
-        // 设置文件内的decl
-        let name = self.cu.codes(pos: node.pos)
-        if let decl = self.currentScope.find(name: name) {
-            node.setDeclarations([
-                SymbolPosition(file: self.fileObject, node: decl)
-            ])
-        }
-    }
-    
-    override func visit_function_type(_ node: goast_function_type) {
-        self.pushScope("FunctionType")
-        defer {
-            self.popScope()
-        }
-        
-        super.visit_function_type(node)
-        
-        // Type
-        if let type = self.typeInfer_signature(receiver: nil, parameters: node.parameters, results: node.result) {
-            node.setType(type: type)
-        }
-    }
-    
-    override func visit_method_spec_list(_ node: goast_method_spec_list) {
-        self.pushScope("MethodSpecList")
-        super.visit_method_spec_list(node)
-        self.popScope()
-    }
-    
-    override func visit_field_declaration_list(_ node: goast_field_declaration_list) {
-        self.pushScope("FieldDeclarationList")
-        super.visit_field_declaration_list(node)
-        self.popScope()
-    }
-    
-    override func visit_parameter_declaration(_ node: goast_parameter_declaration) {
-        super.visit_parameter_declaration(node)
-        
-        for name in node.name {
-            self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-            name.setDeclarations([
-                SymbolPosition(file: self.fileObject, node: name)
-            ])
-        }
-        
-        // Type
-        guard let type = node.type?.getType() as? GoType else {
-            return
-        }
-        for name in node.name {
-            name.setType(type: type)
-        }
-    }
-    
-    override func visit_short_var_declaration(_ node: goast_short_var_declaration) {
-        super.visit_short_var_declaration(node)
-        
-        var isDef = true
-        if let left = node.left {
-            if let right = node.right {
-                let op = self.cu.codesBetweenPos(left.pos, right.pos).trimmingCharacters(in: .whitespacesAndNewlines)
-                if op != ":=" {
-                    isDef = false
-                }
-            }
-            
-            if isDef {
-                let identifiers = left.finds(t: goast_identifier.self)
-                for identifier in identifiers {
-                    let name = identifier as! goast_identifier
-                    if self.currentScope.find(name: self.cu.codes(pos: name.pos)) != nil && identifiers.count > 1 {
-                        // 如果name已经有定义了并且左侧变量个数大于1
-                    } else {
-                        self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-                        name.setDeclarations([
-                            SymbolPosition(file: self.fileObject, node: name)
-                        ])
-                    }
-                }
-            }
-        }
-        
-        // Type
-        guard let left = node.left else {
-            return
-        }
-        guard let right = node.right else {
-            return
-        }
-        self.typeInfer_assign_right_to_left(left: left, right: right)
-    }
-    
-    override func visit_source_file(_ node: goast_source_file) {
-        super.visit_source_file(node)
-        // 这里不做File层面的Scope的定义，具体的Scope在init时已经创建了
-    }
-    
-    override func visit_type_alias(_ node: goast_type_alias) {
-        super.visit_type_alias(node)
-        
-        if let name = node.name {
-            self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-            name.setDeclarations([
-                SymbolPosition(file: self.fileObject, node: name)
-            ])
-        }
-        
-        // Type
-        guard let type = node.type?.getType() as? GoType else {
-            return
-        }
-        if let name = node.name {
-            name.setType(type: type)
-        }
-    }
-    
-    override func visit_type_case(_ node: goast_type_case) {
-        self.pushScope("TypeCase")
-        
-        // Visit
-        for ast in node.type {
-            self.visit__type(ast)
-        }
-        
-        // Type
-        if node.type.count == 1 {
-            if let type = node.type[0].getType() as? GoType {
-                if let v = self.tssVStack.last as? goast_identifier {
-                    v.setType(type: type)
-                }
-            }
-        }
-
-        for ast in node.children {
-            self.visit__statement(ast)
-        }
-
-        if self.handleError {
-            for node in node.errors {
-                self.visit_ast(node)
-            }
-        }
-        
-        if let v = self.tssVStack.last as? goast_identifier {
-            v.clearType()
-        }
-        
-        self.popScope()
-    }
-    
-    override func visit_type_declaration(_ node: goast_type_declaration) {
-        super.visit_type_declaration(node)
-        
-        // typeSpec情况
-        let typeSpecs = node.finds(t: goast_type_spec.self)
-        for typeSpec in typeSpecs {
-            if let name = (typeSpec as! goast_type_spec).name {
-                self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-                name.setDeclarations([
-                    SymbolPosition(file: self.fileObject, node: name)
-                ])
-            }
-        }
-        
-        // typeAlias情况
-        let typeAliases = node.finds(t: goast_type_alias.self)
-        for typeAlias in typeAliases {
-            if let name = (typeAlias as! goast_type_alias).name {
-                self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-                name.setDeclarations([
-                    SymbolPosition(file: self.fileObject, node: name)
-                ])
-            }
-        }
-    }
-    
-    override func visit_type_identifier(_ node: goast_type_identifier) {
-        super.visit_type_identifier(node)
-        
-        // 设置文件内的decl
-        let name = self.cu.codes(pos: node.pos)
-        if let decl = self.currentScope.find(name: name) {
-            node.setDeclarations([
-                SymbolPosition(file: self.fileObject, node: decl)
-            ])
-        }
-        
-        // Type
-        if let decl = self.currentScope.find(name: name) as? UASTExpr {
-            if let type = decl.getType() as? GoType {
-                node.setType(type: type)
-            }
-        }
-    }
-    
-    override func visit_type_switch_statement(_ node: goast_type_switch_statement) {
-        self.pushScope("TypeSwitchStatement")
-        
-        self.visit_node(node)
-        
-        if let ast = node.initializer {
-            self.visit__simple_statement(ast)
-        }
-
-        if let ast = node.alias {
-            self.visit_expression_list(ast)
-            let identifiers = ast.finds(t: goast_identifier.self)
-            for identifier in identifiers {
-                let name = identifier as! goast_identifier
-                self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-                name.setDeclarations([
-                    SymbolPosition(file: self.fileObject, node: name)
-                ])
-            }
-            
-            // Type
-            if identifiers.count == 1 {
-                self.tssVStack.append((identifiers[0] as! goast_identifier))
-            } else {
-                self.tssVStack.append(nil)
-            }
-        } else {
-            self.tssVStack.append(nil)
-        }
-
-        if let ast = node.value {
-            self.visit__expression(ast)
-        }
-
-        for ast in node.children {
-            self.visit_ast(ast)
-        }
-
-        if self.handleError {
-            for node in node.errors {
-                self.visit_ast(node)
-            }
-        }
-        
-        // Type
-        _ = self.tssVStack.popLast()
-    
-        self.popScope()
-    }
-    
-    override func visit_var_declaration(_ node: goast_var_declaration) {
-        super.visit_var_declaration(node)
-        
-        // 处理左侧变量
-        let varSpecs = node.finds(t: goast_var_spec.self)
-        for varSpec in varSpecs {
-            let vs = varSpec as! goast_var_spec
-            for name in vs.name {
-                self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-                name.setDeclarations([
-                    SymbolPosition(file: self.fileObject, node: name)
-                ])
-            }
-        }
-    }
-    
-    override func visit_variadic_parameter_declaration(_ node: goast_variadic_parameter_declaration) {
-        super.visit_variadic_parameter_declaration(node)
-        
-        if let name = node.name {
-            self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-            name.setDeclarations([
-                SymbolPosition(file: self.fileObject, node: name)
-            ])
-        }
-        
-        // Type
-        if let type = node.type?.getType() as? GoType {
-            if let name = node.name {
-                name.setType(type: type)
-            }
-        }
-    }
-    
-    override func visit_range_clause(_ node: goast_range_clause) {
-        super.visit_range_clause(node)
-        
-        var isDef = true
-        if let left = node.left {
-            if let right = node.right {
-                let op = self.cu.codesBetweenPos(left.pos, right.pos).trimmingCharacters(in: .whitespacesAndNewlines)
-                if !op.contains(":=") {
-                    isDef = false
-                }
-            }
-            
-            if isDef {
-                let identifiers = left.finds(t: goast_identifier.self)
-                for identifier in identifiers {
-                    let name = identifier as! goast_identifier
-                    if self.currentScope.find(name: self.cu.codes(pos: name.pos)) != nil && identifiers.count > 1 {
-                        // 如果name已经有定义了并且左侧变量个数大于1
-                    } else {
-                        self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-                        name.setDeclarations([
-                            SymbolPosition(file: self.fileObject, node: name)
-                        ])
-                    }
-                }
-            }
-            
-        }
-        
-        // Type
-        guard let right = node.right else {
-            return
-        }
-        if let left = node.left {
-            if left.children.count == 1 {
-                switch right.getType() {
-                case _ as GoArrayType:
-                    if let ident = left.children[0] as? goast_identifier {
-                        ident.setType(type: GoBasicType(kind: .int))
-                    }
-                case _ as GoSliceType:
-                    if let ident = left.children[0] as? goast_identifier {
-                        ident.setType(type: GoBasicType(kind: .int))
-                    }
-                case let rangeType as GoMapType:
-                    if let ident = left.children[0] as? goast_identifier {
-                        ident.setType(type: rangeType.key)
-                    }
-                case _ as GoBasicType:
-                    if let ident = left.children[0] as? goast_identifier {
-                        ident.setType(type: GoBasicType(kind: .int))
-                    }
-                default:
-                    break
-                }
-            } else if left.children.count == 2 {
-                switch right.getType() {
-                case let rangeType as GoArrayType:
-                    if let ident = left.children[0] as? goast_identifier {
-                        ident.setType(type: GoBasicType(kind: .int))
-                    }
-                    if let value = left.children[1] as? goast_identifier {
-                        value.setType(type: rangeType.elem)
-                    }
-                case let rangeType as GoSliceType:
-                    if let ident = left.children[0] as? goast_identifier {
-                        ident.setType(type: GoBasicType(kind: .int))
-                    }
-                    if let value = left.children[1] as? goast_identifier {
-                        value.setType(type: rangeType.elem)
-                    }
-                case let rangeType as GoMapType:
-                    if let ident = left.children[0] as? goast_identifier {
-                        ident.setType(type: rangeType.key)
-                    }
-                    if let value = left.children[1] as? goast_identifier {
-                        value.setType(type: rangeType.elem)
-                    }
-                case let rangeType as GoBasicType:
-                    if let ident = left.children[0] as? goast_identifier {
-                        ident.setType(type: GoBasicType(kind: .int))
-                    }
-                    if rangeType.kind == .string {
-                        if let value = left.children[1] as? goast_identifier {
-                            value.setType(type: GoBasicType(kind: .string))
-                        }
-                    } else if rangeType.kind == .int  {
-                        if let value = left.children[1] as? goast_identifier {
-                            value.setType(type: GoBasicType(kind: .int))
-                        }
-                    }
-                default:
-                    break
-                }
-            }
-        }
-    }
-    
-    override func visit_selector_expression(_ node: goast_selector_expression) {
-        super.visit_selector_expression(node)
-        
-        if let field = node.field {
-            // selector的field的declaration会在后面typeinfer时处理
-            field._declarations = []
-        }
-    }
-    
-    override func visit_qualified_type(_ node: goast_qualified_type) {
-        super.visit_qualified_type(node)
-        
-        if let name = node.name {
-            // qualified_type的name的declaration会在后面typeinfer时处理
-            name._declarations = []
-        }
-    }
-    
-    override func visit_receive_statement(_ node: goast_receive_statement) {
-        super.visit_receive_statement(node)
-        
-        if let left = node.left {
-            if let right = node.right {
-                let op = self.cu.codesBetweenPos(left.pos, right.pos).trimmingCharacters(in: .whitespacesAndNewlines)
-                if op != ":=" {
-                    return
-                }
-            }
-            
-            let identifiers = left.finds(t: goast_identifier.self)
-            for identifier in identifiers {
-                let name = identifier as! goast_identifier
-                if self.currentScope.find(name: self.cu.codes(pos: name.pos)) != nil && identifiers.count > 1 {
-                    // 如果name已经有定义了并且左侧变量个数大于1
-                } else {
-                    self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
-                    name.setDeclarations([
-                        SymbolPosition(file: self.fileObject, node: name)
-                    ])
-                }
-            }
-        }
-        
-        // Type
-        guard let right = node.right else {
-            return
-        }
-        guard let left = node.left else {
-            return
-        }
-        self.typeInfer_assign_right_to_left(left: left, right: right)
     }
     
     override func visit_array_type(_ node: goast_array_type) {
         super.visit_array_type(node)
         
-        // Type
         if node.length == nil {
             return
         }
@@ -894,40 +98,20 @@ class GoTypeVisiter: GoVisiter {
         guard let length = Int(self.cu.codes(pos: node.length!.pos)) else {
             return
         }
-        
-        guard let elementType = node.element?.getType() as? GoType else {
+
+        guard let elementType = self.getType(node.element) else {
             return
         }
         
         let arrayType = GoArrayType(len: length, elem: elementType)
+        arrayType.setPosition(sp: SymbolPosition(file: self.file, node: node))
         node.setType(type: arrayType)
-    }
-    
-    override func visit_binary_expression(_ node: goast_binary_expression) {
-        super.visit_binary_expression(node)
-        
-        // Type
-        if let leftType = node.left?.getType() as? GoType {
-            node.setType(type: leftType)
-        } else if let rightType = node.right?.getType() as? GoType {
-            node.setType(type: rightType)
-        }
-    }
-    
-    override func visit_call_expression(_ node: goast_call_expression) {
-        super.visit_call_expression(node)
-        
-        // Type
-        if let functionType = node.function?.getType() as? GoSignatureType {
-            node.setType(type: functionType.results)
-        }
     }
     
     override func visit_channel_type(_ node: goast_channel_type) {
         super.visit_channel_type(node)
         
-        // Type
-        guard let elemType = node.value?.getType() as? GoType else {
+        guard let elementType = self.getType(node.value) else {
             return
         }
         
@@ -943,243 +127,323 @@ class GoTypeVisiter: GoVisiter {
                 dir = .sendrecv
             }
         }
-        let chanType = GoChanType(dir: dir, elem: elemType)
+        
+        let chanType = GoChanType(dir: dir, elem: elementType)
+        chanType.setPosition(sp: SymbolPosition(file: self.file, node: node))
         node.setType(type: chanType)
-        
     }
     
-    override func visit_false(_ node: goast_false) {
-        super.visit_false(node)
+    private func handleSignatureParameterList(parameters: goast_parameter_list?) -> (GoTupleType, Bool) {
+        var hasVariadicParameter = false
         
-        // Type
-        let boolType = GoBasicType(kind: .bool)
-        node.setType(type: boolType)
+        if parameters == nil {
+            return (GoTupleType(vars: []), hasVariadicParameter)
+        }
+        
+        var vars: [GoVar] = []
+        for child in parameters!.children {
+            switch child {
+            case let node as goast_parameter_declaration:
+                if let type = self.getType(node.type) {
+                    for ident in node.name {
+                        let v = GoVar(name: self.cu.codes(pos: ident.pos), typ: type, situation: .param)
+                        ident.setType(type: type)
+                        vars.append(v)
+                    }
+                } else {
+                    for ident in node.name {
+                        let v = GoVar(name: self.cu.codes(pos: ident.pos), situation: .param)
+                        vars.append(v)
+                    }
+                }
+            case let node as goast_variadic_parameter_declaration:
+                hasVariadicParameter = true
+                if let type = self.getType(node.type) {
+                    if let ident = node.name {
+                        let v = GoVar(name: self.cu.codes(pos: ident.pos), typ: type, situation: .param)
+                        ident.setType(type: type)
+                        vars.append(v)
+                    }
+                } else {
+                    if let ident = node.name {
+                        let v = GoVar(name: self.cu.codes(pos: ident.pos), situation: .param)
+                        vars.append(v)
+                    }
+                }
+            default:
+                break
+            }
+        }
+        
+        return (GoTupleType(vars: vars), hasVariadicParameter)
     }
     
-    override func visit_float_literal(_ node: goast_float_literal) {
-        super.visit_float_literal(node)
+    private func handleSignature(receiver: goast_parameter_list?, parameters: goast_parameter_list?, results: GoAST?) -> GoSignatureType? {
+        let sig = GoSignatureType()
         
-        // Type
-        let floatType = GoBasicType(kind: .float)
-        node.setType(type: floatType)
+        if receiver != nil {
+            let (recv, _) = self.handleSignatureParameterList(parameters: receiver)
+            if receiver != nil && recv.vars.count == 1 {
+                sig.recv = recv.vars[0]
+            }
+        }
+        
+        if parameters != nil {
+            let (params, hasVariadicParam) = self.handleSignatureParameterList(parameters: parameters)
+            sig.params = params
+            sig.variadic = hasVariadicParam
+        }
+        
+        switch results {
+        case nil:
+            sig.results = GoTupleType(vars: [])
+        case let node as goast_parameter_list:
+            let (res, _) = self.handleSignatureParameterList(parameters: node)
+            sig.results = res
+        default:
+            if let type = self.getType(results as? goast__simple_type) {
+                let v = GoVar(typ: type, situation: .param)
+                sig.results = GoTupleType(vars: [v])
+            } else {
+                sig.results = GoTupleType(vars: [])
+            }
+        }
+        return sig
     }
     
-    override func visit_imaginary_literal(_ node: goast_imaginary_literal) {
-        super.visit_imaginary_literal(node)
+    override func visit_function_declaration(_ node: goast_function_declaration) {
+        super.visit_function_declaration(node)
         
-        // Type
-        let complexType = GoBasicType(kind: .complex)
-        node.setType(type: complexType)
+        guard let funcType = node.name?.getType() as? GoFunc else {
+            return
+        }
+        
+        // 补充funcType信息
+        if let sig = self.handleSignature(receiver: nil, parameters: node.parameters, results: node.result) {
+            funcType.setSignature(sig: sig)
+        }
+    }
+    
+    override func visit_function_type(_ node: goast_function_type) {
+        super.visit_function_type(node)
+        
+        if let sig = self.handleSignature(receiver: nil, parameters: node.parameters, results: node.result) {
+            sig.setPosition(sp: SymbolPosition(file: self.file, node: node))
+            node.setType(type: sig)
+        }
     }
     
     override func visit_implicit_length_array_type(_ node: goast_implicit_length_array_type) {
         super.visit_implicit_length_array_type(node)
         
-        // Type
-        guard let elementType = node.element?.getType() as? GoType else {
+        guard let elementType = self.getType(node.element) else {
             return
         }
         
-        let arrayType = GoArrayType(elem: elementType)
+        let arrayType = GoArrayType(len: 0, elem: elementType)
+        arrayType.setPosition(sp: SymbolPosition(file: self.file, node: node))
         node.setType(type: arrayType)
-    }
-    
-    override func visit_index_expression(_ node: goast_index_expression) {
-        super.visit_index_expression(node)
-        
-        // Type
-        guard let operand = node.operand else {
-            return
-        }
-        
-        switch operand.getType() {
-        case let t as GoArrayType:
-            node.setType(type: t.elem)
-        case let t as GoSliceType:
-            node.setType(type: t.elem)
-        case let t as GoMapType:
-            node.setType(type: t.elem)
-        default:
-            break
-        }
-    }
-    
-    override func visit_int_literal(_ node: goast_int_literal) {
-        super.visit_int_literal(node)
-        
-        // Type
-        let intType = GoBasicType(kind: .int)
-        node.setType(type: intType)
-    }
-    
-    override func visit_interpreted_string_literal(_ node: goast_interpreted_string_literal) {
-        super.visit_interpreted_string_literal(node)
-        
-        // Type
-        let stringType = GoBasicType(kind: .string)
-        node.setType(type: stringType)
     }
     
     override func visit_map_type(_ node: goast_map_type) {
         super.visit_map_type(node)
         
-        // Type
-        guard let keyType = node.key?.getType() as? GoType else {
+        guard let keyType = self.getType(node.key) else {
             return
         }
         
-        guard let valueType = node.value?.getType() as? GoType else {
+        guard let valueType = self.getType(node.value) else {
             return
         }
         
         let mapType = GoMapType(key: keyType, elem: valueType)
+        mapType.setPosition(sp: SymbolPosition(file: self.file, node: node))
         node.setType(type: mapType)
-    }
-    
-    override func visit_parenthesized_expression(_ node: goast_parenthesized_expression) {
-        super.visit_parenthesized_expression(node)
-        
-        // Type
-        guard let type = node.children?.getType() as? GoType else {
-            return
-        }
-        node.setType(type: type)
     }
     
     override func visit_parenthesized_type(_ node: goast_parenthesized_type) {
         super.visit_parenthesized_type(node)
         
-        // Type
-        guard let type = node.children?.getType() as? GoType else {
-            return
+        if let type = node.children?.getType() as? GoType {
+            node.setType(type: type)
         }
-        node.setType(type: type)
     }
     
     override func visit_pointer_type(_ node: goast_pointer_type) {
         super.visit_pointer_type(node)
         
-        // Type
-        guard let type = node.children?.getType() as? GoType else {
+        guard let baseType = self.getType(node.children) else {
             return
         }
-        let pointType = GoPointerType(base: type)
+        
+        let pointType = GoPointerType(base: baseType)
+        pointType.setPosition(sp: SymbolPosition(file: self.file, node: node))
         node.setType(type: pointType)
     }
     
-    override func visit_raw_string_literal(_ node: goast_raw_string_literal) {
-        super.visit_raw_string_literal(node)
+    override func visit_qualified_type(_ node: goast_qualified_type) {
+        super.visit_qualified_type(node)
         
-        // Type
-        let stringType = GoBasicType(kind: .string)
-        node.setType(type: stringType)
-    }
-    
-    override func visit_rune_literal(_ node: goast_rune_literal) {
-        super.visit_rune_literal(node)
-        
-        // Type
-        let stringType = GoBasicType(kind: .rune)
-        node.setType(type: stringType)
-    }
-    
-    override func visit_slice_expression(_ node: goast_slice_expression) {
-        super.visit_slice_expression(node)
-        
-        // Type
-        guard let operand = node.operand else {
+        guard let pkg = node.package else {
             return
         }
         
-        switch operand.getType() {
-        case let t as GoArrayType:
-            node.setType(type: t.elem)
-        case let t as GoSliceType:
-            node.setType(type: t.elem)
-        case let t as GoMapType:
-            node.setType(type: t.elem)
-        default:
-            break
+        let pkgName = self.cu.codes(pos: pkg.pos)
+        
+        guard let x = node.name else {
+            return
         }
+        
+        let name = self.cu.codes(pos: x.pos)
+        
+        // 获取对应package
+        guard let targetPkg = self.pkg.getPkgByName(fileObj: self.file, name: pkgName) else {
+            return
+        }
+        // 在对应的package中搜索符号
+        guard let sp = targetPkg.findSymbol(name: name) else {
+            return
+        }
+        // 获取对应符号的类型
+        guard let t = (sp.getNode() as? UASTExpr)?.getType() as? GoType else {
+            return
+        }
+        // 绑定类型
+        node.setType(type: t)
     }
     
     override func visit_slice_type(_ node: goast_slice_type) {
         super.visit_slice_type(node)
         
-        // Type
-        guard let elementType = node.element?.getType() as? GoType else {
+        guard let elemType = self.getType(node.element) else {
             return
         }
         
-        let sliceType = GoSliceType(elem: elementType)
+        let sliceType = GoSliceType(elem: elemType)
+        sliceType.setPosition(sp: SymbolPosition(file: self.file, node: node))
         node.setType(type: sliceType)
     }
     
-    override func visit_true(_ node: goast_true) {
-        super.visit_true(node)
+    
+    override func visit_type_identifier(_ node: goast_type_identifier) {
+        super.visit_type_identifier(node)
         
-        // Type
-        let boolType = GoBasicType(kind: .bool)
-        node.setType(type: boolType)
+        if let type = self.getType(node) {
+            node.setType(type: type)
+        }
     }
     
-    override func visit_type_conversion_expression(_ node: goast_type_conversion_expression) {
-        super.visit_type_conversion_expression(node)
+    override func visit_method_declaration(_ node: goast_method_declaration) {
+        super.visit_method_declaration(node)
         
-        // Type
-        guard let type = node.type?.getType() as? GoType else {
+        // 创建对应的Func并加入到Struct的NamedType中
+        guard let sig = self.handleSignature(receiver: node.receiver, parameters: node.parameters, results: node.result) else {
             return
         }
-        node.setType(type: type)
-    }
-    
-    override func visit_unary_expression(_ node: goast_unary_expression) {
-        super.visit_unary_expression(node)
         
-        // Type
-        guard let type = node.operand?.getType() as? GoType else {
+        guard let nameNode = node.name else {
             return
         }
-        node.setType(type: type)
-    }
-    
-    override func visit_var_spec(_ node: goast_var_spec) {
-        super.visit_var_spec(node)
+        let name = self.cu.codes(pos: nameNode.pos)
         
-        // Type
-        if let type = node.type?.getType() as? GoType {
-            for name in node.name {
-                name.setType(type: type)
+        let f = GoFunc(name: name, sig: sig)
+        
+        var namedType: GoNamedType? = nil
+        switch sig.recv?.typ {
+        case let n as GoPointerType:
+            if n.base is GoNamedType {
+                namedType = n.base as? GoNamedType
             }
-        } else if let exprList = node.value {
-            self.typeInfer_assign_right_to_left(left: node.name, right: exprList)
+        case let n as GoNamedType:
+            namedType = n
+        default:
+            break
         }
+        
+        if let nt = namedType {
+            nt.addMethod(method: f)
+        }
+    }
+    
+    override func visit_interface_type(_ node: goast_interface_type) {
+        super.visit_interface_type(node)
+        
+        let interfaceType = GoInterfaceType(methods: [], embeddeds: [])
+        
+        for member in node.children?.children ?? [] {
+            switch member {
+            case let memberNode as goast_method_spec:
+                if let sig = self.handleSignature(receiver: nil, parameters: memberNode.parameters, results: memberNode.result) {
+                    if let nameNode = memberNode.name {
+                        let name = self.cu.codes(pos: nameNode.pos)
+                        let f = GoFunc(name: name, sig: sig)
+                        interfaceType.addMethod(method: f)
+                    }
+                }
+            case let memberNode as goast_type_identifier:
+                if let type = self.getType(memberNode) {
+                    interfaceType.addEmbeded(embeded: type)
+                }
+            case let memberNode as goast_qualified_type:
+                if let type = self.getType(memberNode) {
+                    interfaceType.addEmbeded(embeded: type)
+                }
+            default:
+                break
+            }
+        }
+        
+        interfaceType.setPosition(sp: SymbolPosition(file: self.file, node: node))
+        node.setType(type: interfaceType)
+    }
+    
+    override func visit_struct_type(_ node: goast_struct_type) {
+        super.visit_struct_type(node)
+        
+        let structType = GoStructType(fields: [])
+        
+        for item in node.children?.children ?? [] {
+            if let t = self.getType(item.type) {
+                for nameNode in item.name {
+                    let name = self.cu.codes(pos: nameNode.pos)
+                    let v = GoVar(name: name, typ: t, situation: .field)
+                    structType.addField(field: v)
+                }
+            } else {
+                for nameNode in item.name {
+                    let name = self.cu.codes(pos: nameNode.pos)
+                    let v = GoVar(name: name, situation: .field)
+                    structType.addField(field: v)
+                }
+            }
+        }
+        
+        structType.setPosition(sp: SymbolPosition(file: self.file, node: node))
+        node.setType(type: structType)
     }
     
     override func visit_type_spec(_ node: goast_type_spec) {
         super.visit_type_spec(node)
         
-        // Type
-        guard let type = node.type?.getType() as? GoType else {
+        guard let name = node.name?.getType() as? GoNamedType else {
             return
         }
-        guard let name = node.name else {
+        guard let t = node.type?.getType() as? GoType else {
             return
         }
-        name.setType(type: type)
+        name.typ = t
     }
     
-    override func visit_type_assertion_expression(_ node: goast_type_assertion_expression) {
-        super.visit_type_assertion_expression(node)
+    override func visit_type_alias(_ node: goast_type_alias) {
+        super.visit_type_alias(node)
         
-        // Type
-        guard let type = node.type?.getType() as? GoType else {
+        guard let name = node.name?.getType() as? GoNamedType else {
             return
         }
-        node.setType(type: type)
+        guard let t = node.type?.getType() as? GoType else {
+            return
+        }
+        name.typ = t
     }
-    
-    // TODO
-    // identifier的重名定义处理(包括named type)
     
 }

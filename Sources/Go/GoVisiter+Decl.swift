@@ -28,7 +28,8 @@ class GoDeclVisiter: GoVisiter {
         self.pkg = pkg
         self.pkgScope = pkgScope
         self.fileObject = fileObject
-        self.currentScope = Scope(parent: self.pkgScope, name: "File")
+        // 这里的命名格式用于根据scope反查File
+        self.currentScope = Scope(parent: self.pkgScope, name: "File - \(fileObject.rpath())")
         super.init()
         self.handleError = true
     }
@@ -161,6 +162,7 @@ class GoDeclVisiter: GoVisiter {
         // Type
         if let name = node.name {
             let funcType = GoFunc(name: self.cu.codes(pos: name.pos))
+            funcType.setPosition(sp: SymbolPosition(file: self.fileObject, node: name))
             name.setType(type: funcType)
         }
     }
@@ -229,7 +231,15 @@ class GoDeclVisiter: GoVisiter {
         
         // 在package层面定义import信息
         if let path = node.path {
-            self.pkg.addImport(path: self.cu.codes(pos: path.pos))
+            let pathStr = self.cu.codes(pos: path.pos)
+            self.pkg.addImport(path: pathStr)
+            
+            if let name = node.name {
+                let alias = self.cu.codes(pos: name.pos)
+                if alias != "." && alias != "_" {
+                    self.pkg.addFileImportWithAlias(fileObj: self.fileObject, alias: alias, path: pathStr)
+                }
+            }
         }
     }
     
@@ -626,6 +636,7 @@ class GoDeclVisiter: GoVisiter {
         if let name = node.name {
             let nameContent = self.cu.codes(pos: name.pos)
             let namedType = GoNamedType(name: nameContent, pkg: self.pkg)
+            namedType.setPosition(sp: SymbolPosition(file: self.fileObject, node: name))
             name.setType(type: namedType)
         }
     }
@@ -638,6 +649,7 @@ class GoDeclVisiter: GoVisiter {
             let nameContent = self.cu.codes(pos: name.pos)
             let namedType = GoNamedType(name: nameContent, pkg: self.pkg)
             namedType.isAlias = true
+            namedType.setPosition(sp: SymbolPosition(file: self.fileObject, node: name))
             name.setType(type: namedType)
         }
     }

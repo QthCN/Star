@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class Scope {
+open class Scope {
     public let name: String
     public let parent: Scope?
     public var children: [Scope] = []

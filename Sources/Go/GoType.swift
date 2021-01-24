@@ -16,9 +16,8 @@ class GoType: Type {
         return self.symbolPosition
     }
     
-    // 当前该type是否已经完整，对于完整的type来说不需要再进行类型推断
-    func complete() -> Bool {
-        return false
+    func setPosition(sp: SymbolPosition) {
+        self.symbolPosition = sp
     }
 }
 
@@ -36,15 +35,6 @@ enum GoBasicKind {
     case string
     case unsafePointer
 
-    // types for untyped values
-    case untypedBool
-    case untypedInt
-    case untypedRune
-    case untypedFloat
-    case untypedComplex
-    case untypedString
-    case untypedNil
-
     // aliases
     case byte // Uint8
     case rune // Int32
@@ -55,20 +45,19 @@ class GoUnknownType: GoType {
     
 }
 
-class GoBasicType: GoType {
+class GoBasicType: GoType, CustomStringConvertible {
     var kind: GoBasicKind
     
     init(kind: GoBasicKind) {
         self.kind = kind
     }
     
-    override func complete() -> Bool {
-        return true
+    public var description: String {
+        return "\(self.kind)"
     }
 }
 
-class GoArrayType: GoType {
-    private var _complete: Bool = false
+class GoArrayType: GoType, CustomStringConvertible {
     var len: Int?
     var elem: GoType?
     
@@ -87,29 +76,20 @@ class GoArrayType: GoType {
         self.elem = nil
     }
     
-    override func complete() -> Bool {
-        if self._complete {
-            return self._complete
-        }
-        self._complete = self.len != nil && self.elem != nil && self.elem!.complete()
-        return self._complete
+    public var description: String {
+        return "[\(self.len ?? -1)]\(self.elem ?? GoUnknownType())"
     }
 }
 
-class GoSliceType: GoType {
-    private var _complete: Bool = false
+class GoSliceType: GoType, CustomStringConvertible {
     var elem: GoType?
     
     init(elem: GoType) {
         self.elem = elem
     }
     
-    override func complete() -> Bool {
-        if self._complete {
-            return self._complete
-        }
-        self._complete = self.elem != nil && self.elem!.complete()
-        return self._complete
+    public var description: String {
+        return "[]\(self.elem ?? GoUnknownType())"
     }
 }
 
@@ -122,8 +102,7 @@ enum GoVarSituation {
 }
 
 
-class GoVar {
-    private var _complete: Bool = false
+class GoVar: CustomStringConvertible {
     var name: String?
     var typ: GoType?
     var situation: GoVarSituation
@@ -146,18 +125,19 @@ class GoVar {
         self.situation = situation
     }
     
-    func complete() -> Bool {
-        if self._complete {
-            return self._complete
-        }
-        self._complete = self.name != nil && self.typ != nil && self.typ!.complete()
-        return self._complete
+    init(name: String, situation: GoVarSituation) {
+        self.name = name
+        self.situation = situation
+    }
+    
+    
+    public var description: String {
+        return "\(self.name ?? "Unknown")[\(self.typ ?? GoUnknownType())]"
     }
 }
 
 
-class GoStructType: GoType {
-    private var _complete: Bool = false
+class GoStructType: GoType, CustomStringConvertible {
     var fields: [GoVar] = []
     
     init(fields: [GoVar]) {
@@ -166,69 +146,39 @@ class GoStructType: GoType {
     
     func addField(field: GoVar) {
         self.fields.append(field)
-        self._complete = self._complete && field.complete()
     }
     
-    override func complete() -> Bool {
-        if self._complete {
-            return self._complete
-        }
-        
-        for f in fields {
-            if f.complete() == false {
-                return false
-            }
-        }
-        
-        self._complete = true
-        return self._complete
+    public var description: String {
+        return "<\(self.fields)>"
     }
 }
 
 
-class GoPointerType: GoType {
-    private var _complete: Bool = false
+class GoPointerType: GoType, CustomStringConvertible {
     var base: GoType?
     
     init(base: GoType) {
         self.base = base
     }
     
-    override func complete() -> Bool {
-        if self._complete {
-            return self._complete
-        }
-        self._complete = self.base != nil && self.base!.complete()
-        return self._complete
+    public var description: String {
+        return "*\(self.base ?? GoUnknownType())"
     }
 }
 
-class GoTupleType: GoType {
-    private var _complete: Bool = false
+class GoTupleType: GoType, CustomStringConvertible {
     var vars: [GoVar] = []
     
     init(vars: [GoVar]) {
         self.vars = vars
     }
     
-    override func complete() -> Bool {
-        if self._complete {
-            return self._complete
-        }
-        
-        for v in self.vars {
-            if v.complete() == false {
-                return false
-            }
-        }
-        
-        self._complete = true
-        return self._complete
+    public var description: String {
+        return "(\(self.vars))"
     }
 }
 
-class GoSignatureType: GoType {
-    private var _complete: Bool = false
+class GoSignatureType: GoType, CustomStringConvertible {
     var recv: GoVar?
     var params: GoTupleType?
     var results: GoTupleType?
@@ -245,18 +195,13 @@ class GoSignatureType: GoType {
         super.init()
     }
     
-    override func complete() -> Bool {
-        if self._complete {
-            return self._complete
-        }
-        self._complete = self.recv != nil && self.recv!.complete() && self.params != nil && self.params!.complete() && self.results != nil && self.results!.complete()
-        return self._complete
+    public var description: String {
+        return "\(self.params ?? GoUnknownType()) \(self.results ?? GoUnknownType())"
     }
 }
 
 
-class GoFunc: GoType {
-    private var _complete: Bool = false
+class GoFunc: GoType, CustomStringConvertible {
     var name: String
     var sig: GoSignatureType?
     
@@ -269,17 +214,16 @@ class GoFunc: GoType {
         self.name = name
     }
     
-    override func complete() -> Bool {
-        if self._complete {
-            return self._complete
-        }
-        self._complete = self.sig != nil && self.sig!.complete()
-        return self._complete
+    func setSignature(sig: GoSignatureType) {
+        self.sig = sig
+    }
+    
+    public var description: String {
+        return "\(self.name) \(self.sig ?? GoUnknownType())"
     }
 }
 
-class GoInterfaceType: GoType {
-    private var _complete: Bool = false
+class GoInterfaceType: GoType, CustomStringConvertible {
     var methods: [GoFunc] = []
     var embeddeds: [GoType] = []
     
@@ -290,39 +234,19 @@ class GoInterfaceType: GoType {
     
     func addMethod(method: GoFunc) {
         self.methods.append(method)
-        self._complete = self._complete && method.complete()
     }
     
     func addEmbeded(embeded: GoType) {
         self.embeddeds.append(embeded)
-        self._complete = self._complete && embeded.complete()
     }
     
-    override func complete() -> Bool {
-        if self._complete {
-            return self._complete
-        }
-        
-        for m in self.methods {
-            if m.complete() == false {
-                return false
-            }
-        }
-        
-        for e in self.embeddeds {
-            if e.complete() == false {
-                return false
-            }
-        }
-        
-        self._complete = true
-        return self._complete
+    public var description: String {
+        return "<\(self.methods) \(self.embeddeds)>"
     }
 }
 
 
-class GoMapType: GoType {
-    private var _complete: Bool = false
+class GoMapType: GoType, CustomStringConvertible {
     var key: GoType?
     var elem: GoType?
     
@@ -331,12 +255,8 @@ class GoMapType: GoType {
         self.elem = elem
     }
     
-    override func complete() -> Bool {
-        if self._complete {
-            return self._complete
-        }
-        self._complete = self.key != nil && self.key!.complete() && self.elem != nil && self.elem!.complete()
-        return self._complete
+    public var description: String {
+        return "map[\(self.key ?? GoUnknownType())]\(self.elem ?? GoUnknownType())"
     }
 }
 
@@ -346,8 +266,7 @@ enum GoChanDir {
     case recvonly
 }
 
-class GoChanType: GoType {
-    private var _complete: Bool = false
+class GoChanType: GoType, CustomStringConvertible {
     var dir: GoChanDir
     var elem: GoType?
     
@@ -356,18 +275,13 @@ class GoChanType: GoType {
         self.elem = elem
     }
     
-    override func complete() -> Bool {
-        if self._complete {
-            return self._complete
-        }
-        self._complete = self.elem != nil && self.elem!.complete()
-        return self._complete
+    public var description: String {
+        return "chan \(self.dir) \(self.elem ?? GoUnknownType())"
     }
 }
 
 
-class GoNamedType: GoType {
-    private var _complete: Bool = false
+class GoNamedType: GoType, CustomStringConvertible {
     var name: String?
     var pkg: GoPackage?
     var typ: GoType?
@@ -383,21 +297,9 @@ class GoNamedType: GoType {
     
     func addMethod(method: GoFunc) {
         self.methods.append(method)
-        self._complete = self._complete && method.complete()
     }
     
-    override func complete() -> Bool {
-        if self.name != nil && self.typ != nil && self.typ!.complete() == false {
-            return false
-        }
-        
-        for f in self.methods {
-            if f.complete() == false {
-                return false
-            }
-        }
-        
-        self._complete = true
-        return self._complete
+    public var description: String {
+        return "\(self.name ?? "GoNamedType")"
     }
 }
