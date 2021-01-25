@@ -58,6 +58,18 @@ open class AST: CustomStringConvertible {
         }
         return nodes
     }
+    
+    public func find<T>(t: T, line: Int, col: Int) -> AST? {
+        if type(of: self) is T && self.pos.startLine+1 == line && self.pos.startCol+1 == col {
+            return self
+        }
+        for child in self.children_nodes {
+            if let node = child.find(t: t, line: line, col: col) {
+                return node
+            }
+        }
+        return nil
+    }
 
 }
 

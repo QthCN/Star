@@ -120,7 +120,11 @@ public class GoAnalyzer: Analyzer {
         
         // 判断package是否有效
         if package.valid() {
-            self.packages["\(self.modulePrefix)/\(dir.rpath())"] = package
+            var p = "\(self.modulePrefix)/\(dir.rpath())"
+            if p.hasSuffix("/") {
+                p = self.modulePrefix
+            }
+            self.packages[p] = package
             package.path = dir.rpath()
         }
         

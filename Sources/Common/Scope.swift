@@ -33,6 +33,21 @@ open class Scope {
         return self.parent?.find(name: name, depth: depth-1)
     }
     
+    public func searchTopLevelDecl(name: String) -> AST? {
+        if let node = self.declarations[name] {
+            return node
+        }
+        
+        // 搜索函数
+        for child in self.children {
+            if child.name == "FunctionDeclaration" {
+                
+            }
+        }
+        
+        return nil
+    }
+    
     private func nblank(n: Int) -> String {
         var i = 0
         var s = ""

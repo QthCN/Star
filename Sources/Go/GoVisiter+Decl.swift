@@ -148,6 +148,7 @@ class GoDeclVisiter: GoVisiter {
     }
     
     override func visit_function_declaration(_ node: goast_function_declaration) {
+        // Scope搜索top level declaration时依赖这个名字
         self.pushScope("FunctionDeclaration")
         super.visit_function_declaration(node)
         self.popScope()

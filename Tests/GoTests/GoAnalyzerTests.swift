@@ -15,6 +15,7 @@ final class GoAnalyzerTests: XCTestCase {
     let NO_GO_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/GoTests/GoExampleRepos/NonGoRepo"
     let GO_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/GoTests/GoExampleRepos/GoRepo"
     let GO_DECL_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/GoTests/GoExampleRepos/GoDeclRepo"
+    let GO_TYPE_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/GoTests/GoExampleRepos/gtr"
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -193,10 +194,63 @@ final class GoAnalyzerTests: XCTestCase {
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "fi001", line: 119, col: 7, sIdx: 3))
         
         
-        let identifiers = finds_UASTIdentifier(ast: ast)
-        for identifier in identifiers {
+        //let identifiers = finds_UASTIdentifier(ast: ast)
+        //for identifier in identifiers {
             //print(identifier, identifier.listDeclarations())
-        }
+        //}
+    }
+    
+    func testTypeAnalysis() {
+        let config = Configuration()
+        let fs = MacFileSystem(rootDir: GO_TYPE_REPO_PATH)
+        analyzer.analysis(fs: fs, config: config)
+        XCTAssertEqual(analyzer.isGoProject(), true)
+        
+        let packages = analyzer.packages
+        
+        XCTAssertTrue(packages["gtr"] != nil)
+        XCTAssertTrue(packages["gtr/utils"] != nil)
+        
+        let mainPkg = packages["gtr"]!
+        let mainCU = mainPkg.files["main.go"]!
+        let mainAST = mainCU.getAST()!
+    
+        //let scope = mainPkg.scope
+        //scope.dump()
+        
+        XCTAssertTrue(self.identNameDeclPosIs(cu: mainCU, ast: mainAST, s: "log", line: 4, col: 5, sIdx: 1))
+        
+        // package log
+        var id = mainAST.find(t: goast_identifier.self, line: 9, col: 5) as? UASTExpr
+        XCTAssertTrue(id?.getType() == nil)
+        
+        // var a00 int
+        id = mainAST.find(t: goast_identifier.self, line: 13, col: 9) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoBasicType)
+        
+        // b000 := "x"
+        id = mainAST.find(t: goast_identifier.self, line: 14, col: 5) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoBasicType)
+        
+        // c000, c001 := 1, 2
+        id = mainAST.find(t: goast_identifier.self, line: 15, col: 5) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoBasicType)
+        id = mainAST.find(t: goast_identifier.self, line: 15, col: 11) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoBasicType)
+        
+        
+        // var f00 func(int, string) int
+        id = mainAST.find(t: goast_identifier.self, line: 17, col: 9) as? UASTExpr
+        let f00Type = id!.getType()! as! GoSignatureType
+        XCTAssertTrue(f00Type.params!.vars.count == 2)
+        XCTAssertTrue(f00Type.results!.vars.count == 1)
+        
+        
+        // var f00 func(int, string) int
+        id = mainAST.find(t: goast_selector_expression.self, line: 19, col: 5) as? UASTExpr
+        let utils_Foo_Type = id!.getType()! as! GoFunc
+        XCTAssertTrue(utils_Foo_Type.sig!.params!.vars.count == 0)
+        XCTAssertTrue(utils_Foo_Type.sig!.results!.vars.count == 0)
     }
     
 }

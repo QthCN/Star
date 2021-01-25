@@ -130,6 +130,10 @@ class GoVar: CustomStringConvertible {
         self.situation = situation
     }
     
+    init(situation: GoVarSituation) {
+        self.situation = situation
+    }
+    
     
     public var description: String {
         return "\(self.name ?? "Unknown")[\(self.typ ?? GoUnknownType())]"

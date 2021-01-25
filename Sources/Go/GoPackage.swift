@@ -78,6 +78,9 @@ public class GoPackage {
     // 在Package的top level查找symbol
     func findSymbol(name: String) -> SymbolPosition? {
         for scope in scope.children {
+            // 这里的scope为file层面的scope，在这个文件层面的scope搜索top level declaration
+            
+            
             if let symbolNode = scope.find(name: name, depth: 0) {
                 var parts = scope.name.components(separatedBy: .whitespaces)
                 var path = parts[parts.count-1]

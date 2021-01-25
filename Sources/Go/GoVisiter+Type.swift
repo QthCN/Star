@@ -150,9 +150,19 @@ class GoTypeVisiter: GoVisiter {
                         ident.setType(type: type)
                         vars.append(v)
                     }
+                    if node.name.count == 0 {
+                        // func (int, string) 这种
+                        let v = GoVar(typ: type, situation: .param)
+                        vars.append(v)
+                    }
                 } else {
                     for ident in node.name {
                         let v = GoVar(name: self.cu.codes(pos: ident.pos), situation: .param)
+                        vars.append(v)
+                    }
+                    if node.name.count == 0 {
+                        // func (int, string) 这种
+                        let v = GoVar(situation: .param)
                         vars.append(v)
                     }
                 }
@@ -163,12 +173,21 @@ class GoTypeVisiter: GoVisiter {
                         let v = GoVar(name: self.cu.codes(pos: ident.pos), typ: type, situation: .param)
                         ident.setType(type: type)
                         vars.append(v)
+                    } else {
+                        // func (int, string) 这种
+                        let v = GoVar(typ: type, situation: .param)
+                        vars.append(v)
                     }
                 } else {
                     if let ident = node.name {
                         let v = GoVar(name: self.cu.codes(pos: ident.pos), situation: .param)
                         vars.append(v)
+                    } else {
+                        // func (int, string) 这种
+                        let v = GoVar(situation: .param)
+                        vars.append(v)
                     }
+                    
                 }
             default:
                 break
