@@ -99,6 +99,7 @@ public class GoAnalyzer: Analyzer {
         self.analysisTypeInfo()
         
         // 生成expr的type和identifier的resolve信息
+        self.analysisSymbolInfo()
     }
     
     func analysisImportDependGraph() {
@@ -188,10 +189,70 @@ public class GoAnalyzer: Analyzer {
         return true
     }
     
+    private func isPkgCanDoSymbolInfoAnalysis(pkg: GoPackage) -> Bool {
+        if pkg.exprResolverAnalysised == true {
+            return false
+        }
+        
+        if pkg.depPackages.count == 0 {
+            return true
+        }
+        
+        for dp in pkg.depPackages {
+            if dp.exprResolverAnalysised == false {
+                return false
+            }
+        }
+        
+        return true
+    }
+    
     func analysisTypeInfoOnPkg(pkg: GoPackage) {
         for (path, cu) in pkg.files {
             let typeVisiter = GoTypeVisiter(cu: cu, pkg: pkg, file: pkg.fileObjs[path]!)
             typeVisiter.visit_ast(cu.getAST()! as! GoAST)
+        }
+    }
+    
+    func analysisSymbolInfoOnPkg(pkg: GoPackage) {
+        for (path, cu) in pkg.files {
+            let exprVisiter = GoExprVisiter(cu: cu, pkg: pkg, file: pkg.fileObjs[path]!)
+            exprVisiter.visit_ast(cu.getAST()! as! GoAST)
+        }
+    }
+    
+    func analysisSymbolInfo() {
+        // 从底层package开始从下往上处理。每次处理时从package中挑选 没有depPackage的 或者 所有的depPackage都已经被处理 的package进行处理
+        var pkgs: [GoPackage] = []
+        while true {
+            // 执行分析
+            let group = DispatchGroup()
+            for pkg in pkgs {
+                group.enter()
+                self.queue.async {
+                    self.analysisSymbolInfoOnPkg(pkg: pkg)
+                    group.leave()
+                }
+            }
+            group.wait()
+            
+            // 标记为已经分析
+            for pkg in pkgs {
+                pkg.exprResolverAnalysised = true
+            }
+            
+            pkgs = []
+            
+            // 获取下一批
+            for (_, pkg) in self.packages {
+                if isPkgCanDoSymbolInfoAnalysis(pkg: pkg) {
+                    pkgs.append(pkg)
+                }
+            }
+            
+            if pkgs.count == 0 {
+                break
+            }
         }
     }
     

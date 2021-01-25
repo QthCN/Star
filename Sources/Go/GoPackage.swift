@@ -24,6 +24,8 @@ public class GoPackage {
     var depPackages: [GoPackage] = []
     // 该package是否已经被type info分析过
     var typeInfoAnalysised: Bool = false
+    // 该package是否已经被expr resolver分析过
+    var exprResolverAnalysised: Bool = false
     
     init(analyzer: GoAnalyzer) {
         self.analyzer = analyzer
