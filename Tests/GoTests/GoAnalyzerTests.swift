@@ -109,7 +109,7 @@ final class GoAnalyzerTests: XCTestCase {
         analyzer.analysis(fs: fs, config: config)
         XCTAssertEqual(analyzer.isGoProject(), true)
         let packages = analyzer.listPackages()
-        let package = packages["/"]!
+        let package = packages[""]!
         let cu = package.getFile(name: "main.go")!
         let ast = cu.getAST()!
         //let scope = package.scope
@@ -251,6 +251,40 @@ final class GoAnalyzerTests: XCTestCase {
         let utils_Foo_Type = id!.getType()! as! GoFunc
         XCTAssertTrue(utils_Foo_Type.sig!.params!.vars.count == 0)
         XCTAssertTrue(utils_Foo_Type.sig!.results!.vars.count == 0)
+        
+        // i, y := controller.DoSthOnX(&controlller.X{})
+        id = mainAST.find(t: goast_identifier.self, line: 24, col: 12) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoPointerType)
+        
+        // m := y.M[1].A.Z -> y
+        id = mainAST.find(t: goast_identifier.self, line: 25, col: 14) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoPointerType)
+        
+        // m := y.M[1].A.Z -> m
+        id = mainAST.find(t: goast_identifier.self, line: 25, col: 9) as? UASTExpr
+        XCTAssertTrue((id?.getType() as! GoBasicType).kind == .string)
+        
+        // zm := [10]string{"x"}
+        id = mainAST.find(t: goast_identifier.self, line: 31, col: 5) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoArrayType)
+        
+        // zmItem := zm[0]
+        id = mainAST.find(t: goast_identifier.self, line: 32, col: 5) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoBasicType)
+        
+        
+        // if val, ok := dict["foo"]; ok { -> val
+        id = mainAST.find(t: goast_identifier.self, line: 35, col: 8) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoNamedType)
+        
+        
+        // if val, ok := dict["foo"]; ok { -> ok
+        id = mainAST.find(t: goast_identifier.self, line: 35, col: 32) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoBasicType)
+        
+        print(id)
+        print(id?.getType())
+        
     }
     
 }

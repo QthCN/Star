@@ -1,8 +1,8 @@
 package main
-
 import (
-    log "github.com/sirupsen/logrus"
     "gtr/utils"
+    log "github.com/sirupsen/logrus"
+    "gtr/controller"
 )
 
 func main() {
@@ -18,3 +18,26 @@ func main() {
 
     utils.Foo()
 }
+
+
+func X() {
+        i, y := controller.DoSthOnX(&controlller.X{})
+        m := y.M[1].A.Z
+}
+
+zm := 100
+
+func Z() {
+    zm := [10]string{"x"}
+    zmItem := zm[0]
+
+    dict := map[string]controller.Y{}
+    if val, ok := dict["foo"]; ok {
+        //do something here
+    }
+}
+
+
+
+
+

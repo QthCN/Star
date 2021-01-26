@@ -29,6 +29,10 @@ class GoExprVisiter: GoVisiter {
     
     private func typeInfer_assign_right_to_left(left: goast_expression_list, right: goast_expression_list) {
         var types: [GoType] = []
+        
+        if right.children.count == 1 {
+            return self.typeInfer_assign_right_to_left(left: left, right: right.children[0])
+        }
 
         for item in right.children {
             switch item.getType() {
@@ -59,34 +63,9 @@ class GoExprVisiter: GoVisiter {
     }
     
     private func typeInfer_assign_right_to_left(left: [goast_identifier], right: goast_expression_list) {
-        var types: [GoType] = []
-
-        for item in right.children {
-            switch item.getType() {
-            case let itemType as GoTupleType:
-                for v in itemType.vars {
-                    types.append(v.typ ?? GoUnknownType())
-                }
-            default:
-                if let t = item.getType() as? GoType {
-                    types.append(t)
-                } else {
-                    types.append(GoUnknownType())
-                }
-            }
-        }
-
-        for (idx, item) in left.enumerated() {
-            if idx >= types.count {
-                break
-            }
-            let rightType = types[idx]
-            if rightType is GoUnknownType {
-                // pass
-            } else {
-                item.setType(type: rightType)
-            }
-        }
+        let exprs = goast_expression_list(pos: Position(0, 0, 0, 0, 0, 0))
+        exprs.children = left
+        return self.typeInfer_assign_right_to_left(left: exprs, right: right)
     }
     
     private func typeInfer_assign_right_to_left(left: goast_expression_list, right: goast__expression) {
@@ -106,6 +85,31 @@ class GoExprVisiter: GoVisiter {
                 }
                 if let ok = left.children[1] as? goast_identifier {
                     ok.setType(type: GoBasicType(kind: .bool))
+                }
+            }
+        } else if right is goast_index_expression {
+            let idxExpr = right as! goast_index_expression
+            
+            if idxExpr.operand?.getType() is GoSliceType || idxExpr.operand?.getType() is GoArrayType {
+                if let t = right.getType() as? GoType {
+                    if let value = left.children[0] as? goast_identifier {
+                        value.setType(type: t)
+                    }
+                }
+            } else if idxExpr.operand?.getType() is GoMapType {
+                if let t = right.getType() as? GoType {
+                    if left.children.count == 2 {
+                        if let value = left.children[0] as? goast_identifier {
+                            value.setType(type: t)
+                        }
+                        if let ok = left.children[1] as? goast_identifier {
+                            ok.setType(type: GoBasicType(kind: .bool))
+                        }
+                    } else if left.children.count == 1 {
+                        if let value = left.children[0] as? goast_identifier {
+                            value.setType(type: t)
+                        }
+                    }
                 }
             }
         } else {
@@ -299,7 +303,7 @@ class GoExprVisiter: GoVisiter {
     override func visit_composite_literal(_ node: goast_composite_literal) {
         super.visit_composite_literal(node)
         
-        if let t = node.getType() as? GoType {
+        if let t = (node.type as? UASTExpr)?.getType() as? GoType {
             node.setType(type: t)
         }
     }
@@ -349,6 +353,14 @@ class GoExprVisiter: GoVisiter {
                 ])
             }
         }
+        
+        // 设置类型为第一个declaration的类型
+        for decl in node.declarations {
+            if let t = (decl.getNode() as? UASTExpr)?.getType() as? GoType {
+                node.setType(type: t)
+                break
+            }
+        }
     }
     
     override func visit_imaginary_literal(_ node: goast_imaginary_literal) {
@@ -360,7 +372,11 @@ class GoExprVisiter: GoVisiter {
     override func visit_index_expression(_ node: goast_index_expression) {
         super.visit_index_expression(node)
         
-        if let t = node.operand?.getType() as? GoType {
+        if let t = (node.operand?.getType() as? GoMapType)?.elem {
+            node.setType(type: t)
+        } else if let t = (node.operand?.getType() as? GoArrayType)?.elem {
+            node.setType(type: t)
+        } else if let t = (node.operand?.getType() as? GoSliceType)?.elem {
             node.setType(type: t)
         }
     }
@@ -410,7 +426,9 @@ class GoExprVisiter: GoVisiter {
     override func visit_slice_expression(_ node: goast_slice_expression) {
         super.visit_slice_expression(node)
         
-        if let t = node.operand?.getType() as? GoType {
+        if let t = (node.operand?.getType() as? GoArrayType)?.elem {
+            node.setType(type: t)
+        } else if let t = (node.operand?.getType() as? GoSliceType)?.elem {
             node.setType(type: t)
         }
     }
