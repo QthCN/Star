@@ -307,3 +307,19 @@ class GoNamedType: GoType, CustomStringConvertible {
         return "\(self.name ?? "GoNamedType")"
     }
 }
+
+
+// 主要用于Struct/interface的base中，如果base对应的pkg无法定位的话通过这个做占位符
+class GoBaseFieldType: GoType, CustomStringConvertible {
+    var package: String?
+    var name: String?
+    
+    init(package: String, name: String) {
+        self.package = package
+        self.name = name
+    }
+    
+    public var description: String {
+        return "\(self.package ?? "GoBaseFieldTypePkg").\(self.name ?? "GoBaseFieldTypeName")"
+    }
+}

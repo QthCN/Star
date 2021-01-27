@@ -15,3 +15,6 @@ type Y struct {
 func DoSthOnX(x *X) (int, *Y) {
 
 }
+
+func DoSthOnX2(x *X) error {
+}

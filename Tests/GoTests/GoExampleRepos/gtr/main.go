@@ -38,6 +38,22 @@ func Z() {
 }
 
 
+func Z2() {
+    l := &utils.Log{}
+    l.Println("hello")
+    l.Errorln()
+}
 
 
 
+func X2() {
+        if let err := controller.DoSthOnX2(&controlller.X{}); err != nil 
+	{
+		a := err
+		b := a
+                c := b
+	}
+}
+
+func X3(a, b interface{}) interface {} {
+}

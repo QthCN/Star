@@ -363,6 +363,8 @@ class GoExprVisiter: GoVisiter {
         }
     }
     
+    
+    
     override func visit_imaginary_literal(_ node: goast_imaginary_literal) {
         super.visit_imaginary_literal(node)
         
@@ -621,7 +623,7 @@ class GoExprVisiter: GoVisiter {
         // 先搜索方法
         for f in t.methods {
             if f.name == field {
-                return f.sig?.results
+                return f
             }
         }
         
@@ -718,6 +720,13 @@ class GoExprVisiter: GoVisiter {
         if let nodeType = operand.getType() as? GoType {
             if let t = self.handleSelectorExprType(t: nodeType, field: fieldName) {
                 node.setType(type: t)
+                
+                if let pos = t.position() {
+                    field.setDeclarations([
+                        pos
+                    ])
+                }
+                
             }
         } else {
             if let pkg = self.pkg.getPkgByName(fileObj: self.file, name: operandName) {
@@ -725,6 +734,9 @@ class GoExprVisiter: GoVisiter {
                     if let t = (obj.getNode() as? UASTExpr)?.getType() as? GoType {
                         node.setType(type: t)
                     }
+                    field.setDeclarations([
+                        obj
+                    ])
                 }
             }
         }

@@ -282,8 +282,48 @@ final class GoAnalyzerTests: XCTestCase {
         id = mainAST.find(t: goast_identifier.self, line: 35, col: 32) as? UASTExpr
         XCTAssertTrue(id?.getType() is GoBasicType)
         
-        print(id)
-        print(id?.getType())
+        
+        // l := &utils.Log{}
+        id = mainAST.find(t: goast_identifier.self, line: 42, col: 5) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoNamedType)
+        
+        
+        // l.Println("hello")
+        id = mainAST.find(t: goast_selector_expression.self, line: 43, col: 5) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoFunc)
+        let funcPrintln000 = mainAST.find(t: goast_field_identifier.self, line: 43, col: 7) as! goast_field_identifier
+        XCTAssertTrue(funcPrintln000.listDeclarations().count == 1)
+        
+        
+        // l.Errorln()
+        let funcErrorln000 = mainAST.find(t: goast_field_identifier.self, line: 44, col: 7) as! goast_field_identifier
+        XCTAssertTrue(funcErrorln000.listDeclarations().count == 1)
+        
+        id = mainAST.find(t: goast_selector_expression.self, line: 44, col: 5) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoFunc)
+        
+        // l := &utils.Log{}
+        id = mainAST.find(t: goast_identifier.self, line: 42, col: 5) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoNamedType)
+        let structType001 = (id!.getType() as! GoNamedType).typ! as! GoStructType
+        XCTAssertTrue(structType001.fields.count == 4)
+        
+        // if let err := controller.DoSthOnX2(&controlller.X{}); err != nil -> err
+        id = mainAST.find(t: goast_identifier.self, line: 50, col: 16) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoNamedType)
+        
+        // c := b
+        id = mainAST.find(t: goast_identifier.self, line: 54, col: 17) as? UASTExpr
+        XCTAssertTrue(id?.getType() is GoNamedType)
+        
+        
+        // func X3(a, b interface{}) interface {} {
+        id = mainAST.find(t: goast_identifier.self, line: 58, col: 6) as? UASTExpr
+        let x3FuncType = id?.getType() as! GoFunc
+        XCTAssertTrue(x3FuncType.sig?.results?.vars[0].typ is GoInterfaceType)
+        
+        //print(id)
+        //print(id?.getType())
         
     }
     

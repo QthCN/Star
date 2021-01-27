@@ -27,6 +27,10 @@ class GoTypeVisiter: GoVisiter {
     }
     
     private func handleDefaultTypes(n: String) -> GoType? {
+        if n == "error" {
+            return GoNamedType(name: n, pkg: self.pkg)
+        }
+        
         let s = n.lowercased()
         switch s {
         case "bool":
@@ -317,6 +321,8 @@ class GoTypeVisiter: GoVisiter {
         
         // 获取对应package
         guard let targetPkg = self.pkg.getPkgByName(fileObj: self.file, name: pkgName) else {
+            let t = GoBaseFieldType(package: pkgName, name: name)
+            node.setType(type: t)
             return
         }
         // 在对应的package中搜索符号
@@ -366,6 +372,7 @@ class GoTypeVisiter: GoVisiter {
         let name = self.cu.codes(pos: nameNode.pos)
         
         let f = GoFunc(name: name, sig: sig)
+        f.setPosition(sp: SymbolPosition(file: self.file, node: node))
         
         var namedType: GoNamedType? = nil
         switch sig.recv?.typ {
@@ -423,16 +430,23 @@ class GoTypeVisiter: GoVisiter {
         
         for item in node.children?.children ?? [] {
             if let t = self.getType(item.type) {
-                for nameNode in item.name {
-                    let name = self.cu.codes(pos: nameNode.pos)
-                    let v = GoVar(name: name, typ: t, situation: .field)
+                if item.name.count > 0 {
+                    for nameNode in item.name {
+                        let name = self.cu.codes(pos: nameNode.pos)
+                        let v = GoVar(name: name, typ: t, situation: .field)
+                        structType.addField(field: v)
+                    }
+                } else {
+                    let v = GoVar(typ: t, situation: .field)
                     structType.addField(field: v)
                 }
             } else {
-                for nameNode in item.name {
-                    let name = self.cu.codes(pos: nameNode.pos)
-                    let v = GoVar(name: name, situation: .field)
-                    structType.addField(field: v)
+                if item.name.count > 0 {
+                    for nameNode in item.name {
+                        let name = self.cu.codes(pos: nameNode.pos)
+                        let v = GoVar(name: name, situation: .field)
+                        structType.addField(field: v)
+                    }
                 }
             }
         }
