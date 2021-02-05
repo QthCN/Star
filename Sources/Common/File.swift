@@ -8,9 +8,9 @@
 import Foundation
 
 public class FileSystemObject: CustomStringConvertible, Equatable {
-    var isDir: Bool = false
-    var path: String = ""
-    var name: String = ""
+    public var isDir: Bool = false
+    public var path: String = ""
+    public var name: String = ""
 
     public init() {
         // 如果什么都没有提供则生成根目录
