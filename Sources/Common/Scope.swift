@@ -12,11 +12,18 @@ open class Scope {
     public let parent: Scope?
     public var children: [Scope] = []
     public var declarations: [String:AST] = [:]
+    private let lock: NSLock = NSLock()
     
     public init(parent: Scope?, name: String) {
         self.name = name
         self.parent = parent
-        self.parent?.children.append(self)
+        self.parent?.addChild(c: self)
+    }
+    
+    public func addChild(c: Scope) {
+        self.lock.lock()
+        self.children.append(self)
+        self.lock.unlock()
     }
     
     public func declare(name: String, node: AST) {

@@ -105,7 +105,7 @@ final class GoAnalyzerTests: XCTestCase {
     
     func testDeclTidbAnalysis() {
         let config = Configuration()
-        let GO_TIDB_REPO_PATH = "/Users/qintianhuan/Workspace/openSourceProjects/kubernetes"
+        let GO_TIDB_REPO_PATH = "/Users/qintianhuan/Workspace/openSourceProjects/tidb"
         let fs = MacFileSystem(rootDir: GO_TIDB_REPO_PATH)
         analyzer.analysis(fs: fs, config: config)
         XCTAssertEqual(analyzer.isGoProject(), true)

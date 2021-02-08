@@ -92,6 +92,7 @@ public class GoAnalyzer: Analyzer {
         
         // 生成package信息
         self.analysisPackages(FileSystemObject())
+        self.analysisPackageDirs()
         
         // 生成import依赖图
         self.analysisImportDependGraph()
@@ -113,21 +114,11 @@ public class GoAnalyzer: Analyzer {
         }
     }
     
+    var toAnalysisDir: [FileSystemObject] = []
+    
     func analysisPackages(_ dir: FileSystemObject) {
-        let package = GoPackage(analyzer: self)
-        // 分析这个package
-        self.analysisPackage(dir, package)
-        
-        
-        // 判断package是否有效
-        if package.valid() {
-            var p = "\(self.modulePrefix)/\(dir.rpath())"
-            if p.hasSuffix("/") {
-                p = self.modulePrefix
-            }
-            self.packages[p] = package
-            package.path = dir.rpath()
-        }
+        print("analysis \(dir.objName())")
+        self.toAnalysisDir.append(dir)
         
         // 分析子目录中的package
         let subDirItems = self.fs.listItems(path: dir)
@@ -139,6 +130,52 @@ public class GoAnalyzer: Analyzer {
             self.analysisPackages(subDirItem)
         }
         
+    }
+    
+    private let lock = NSLock()
+    
+    func analysisPackageDirs() {
+        sem = DispatchSemaphore(value: 0)
+        var workers: [Thread] = []
+        var i = 0
+        for _ in self.toAnalysisDir {
+            let worker = Thread(target: self, selector: #selector(doAnalysisPackage), object: nil)
+            workers.append(worker)
+            worker.name = "\(i)"
+            i += 1
+            worker.stackSize = 16 * 1024 * 1024
+            worker.start()
+        }
+
+        for _ in workers {
+            sem.wait()
+        }
+        
+        self.toAnalysisDir = []
+    }
+    
+    @objc func doAnalysisPackage() {
+        let threadName = Int(Thread.current.name!)!
+        let dir = self.toAnalysisDir[threadName]
+        print("analysis \(dir.objName())")
+        let package = GoPackage(analyzer: self)
+        // 分析这个package
+        self.analysisPackage(dir, package)
+        
+        // 判断package是否有效
+        if package.valid() {
+            var p = "\(self.modulePrefix)/\(dir.rpath())"
+            if p.hasSuffix("/") {
+                p = self.modulePrefix
+            }
+            package.path = dir.rpath()
+            
+            lock.lock()
+            self.packages[p] = package
+            lock.unlock()
+        }
+        
+        sem.signal()
     }
     
     func analysisPackage(_ directory: FileSystemObject, _ package: GoPackage) {
