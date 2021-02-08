@@ -14,6 +14,7 @@ public class GoAnalyzer: Analyzer {
     var fs: FileSystem! = nil
     var config: Configuration = Configuration()
     let queue = DispatchQueue(label: "star.goanalyzer", qos: .userInteractive, attributes: .concurrent)
+    private var sem = DispatchSemaphore(value: 0)
     
     /// 分析结果
     // package列表 key为路径
@@ -211,34 +212,50 @@ public class GoAnalyzer: Analyzer {
         return true
     }
     
-    func analysisTypeInfoOnPkg(pkg: GoPackage) {
+    @objc func analysisTypeInfoOnPkg() {
+        let threadName = Int(Thread.current.name!)!
+        let pkg = self.analysisTypeInfoPkgs[threadName]
         for (path, cu) in pkg.files {
             let typeVisiter = GoTypeVisiter(cu: cu, pkg: pkg, file: pkg.fileObjs[path]!)
             typeVisiter.visit_ast(cu.getAST()! as! GoAST)
         }
+        sem.signal()
     }
     
-    func analysisSymbolInfoOnPkg(pkg: GoPackage) {
+    @objc func analysisSymbolInfoOnPkg() {
+        let threadName = Int(Thread.current.name!)!
+        let pkg = self.analysisSymbolInfoPkgs[threadName]
         for (path, cu) in pkg.files {
             let exprVisiter = GoExprVisiter(cu: cu, pkg: pkg, file: pkg.fileObjs[path]!)
             exprVisiter.visit_ast(cu.getAST()! as! GoAST)
         }
+        sem.signal()
     }
+    
+    
+    private var analysisSymbolInfoPkgs: [GoPackage] = []
     
     func analysisSymbolInfo() {
         // 从底层package开始从下往上处理。每次处理时从package中挑选 没有depPackage的 或者 所有的depPackage都已经被处理 的package进行处理
         var pkgs: [GoPackage] = []
         while true {
             // 执行分析
-            let group = DispatchGroup()
-            for pkg in pkgs {
-                group.enter()
-                self.queue.async {
-                    self.analysisSymbolInfoOnPkg(pkg: pkg)
-                    group.leave()
-                }
+            sem = DispatchSemaphore(value: 0)
+            var workers: [Thread] = []
+            self.analysisSymbolInfoPkgs = pkgs
+            var i = 0
+            for _ in pkgs {
+                let worker = Thread(target: self, selector: #selector(analysisSymbolInfoOnPkg), object: nil)
+                workers.append(worker)
+                worker.name = "\(i)"
+                i += 1
+                worker.stackSize = 16 * 1024 * 1024
+                worker.start()
             }
-            group.wait()
+            for _ in workers {
+                sem.wait()
+            }
+            self.analysisSymbolInfoPkgs = []
             
             // 标记为已经分析
             for pkg in pkgs {
@@ -260,21 +277,29 @@ public class GoAnalyzer: Analyzer {
         }
     }
     
+    private var analysisTypeInfoPkgs: [GoPackage] = []
+    
     func analysisTypeInfo() {
-        // 从底层package开始从下往上处理。每次处理时从package中挑选 没有depPackage的 或者 所有的depPackage都已经被处理 的package进行处理
         var pkgs: [GoPackage] = []
         while true {
             // 执行分析
-            let group = DispatchGroup()
-            for pkg in pkgs {
-                group.enter()
-                self.queue.async {
-                    self.analysisTypeInfoOnPkg(pkg: pkg)
-                    group.leave()
-                }
+            sem = DispatchSemaphore(value: 0)
+            var workers: [Thread] = []
+            self.analysisTypeInfoPkgs = pkgs
+            var i = 0
+            for _ in pkgs {
+                let worker = Thread(target: self, selector: #selector(analysisTypeInfoOnPkg), object: nil)
+                workers.append(worker)
+                worker.name = "\(i)"
+                i += 1
+                worker.stackSize = 16 * 1024 * 1024
+                worker.start()
             }
-            group.wait()
-            
+            for _ in workers {
+                sem.wait()
+            }
+            self.analysisTypeInfoPkgs = []
+
             // 标记为已经分析
             for pkg in pkgs {
                 pkg.typeInfoAnalysised = true
@@ -294,4 +319,6 @@ public class GoAnalyzer: Analyzer {
             }
         }
     }
+    
+    
 }

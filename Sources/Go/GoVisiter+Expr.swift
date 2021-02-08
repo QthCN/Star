@@ -627,6 +627,12 @@ class GoExprVisiter: GoVisiter {
             }
         }
         
+        // TODO 简单判断下是否存在递归
+        if t.typ === t {
+            print("NamedType with identical typ!")
+            return nil
+        }
+        
         // 搜索对应type
         switch t.typ {
         case let nodeType as GoNamedType:

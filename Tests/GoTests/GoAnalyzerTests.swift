@@ -16,6 +16,7 @@ final class GoAnalyzerTests: XCTestCase {
     let GO_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/GoTests/GoExampleRepos/GoRepo"
     let GO_DECL_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/GoTests/GoExampleRepos/GoDeclRepo"
     let GO_TYPE_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/GoTests/GoExampleRepos/gtr"
+    let GO_SAME_PKG_IMPORT_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/GoTests/GoExampleRepos/SamePkgImportRepo"
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -95,9 +96,16 @@ final class GoAnalyzerTests: XCTestCase {
         return false
     }
     
+    func testSamePackageImprotAnalysis() {
+        let config = Configuration()
+        let fs = MacFileSystem(rootDir: GO_SAME_PKG_IMPORT_REPO_PATH)
+        analyzer.analysis(fs: fs, config: config)
+        XCTAssertEqual(analyzer.isGoProject(), true)
+    }
+    
     func testDeclTidbAnalysis() {
         let config = Configuration()
-        let GO_TIDB_REPO_PATH = "/Users/qintianhuan/Workspace/openSourceProjects/tidb"
+        let GO_TIDB_REPO_PATH = "/Users/qintianhuan/Workspace/openSourceProjects/kubernetes"
         let fs = MacFileSystem(rootDir: GO_TIDB_REPO_PATH)
         analyzer.analysis(fs: fs, config: config)
         XCTAssertEqual(analyzer.isGoProject(), true)
