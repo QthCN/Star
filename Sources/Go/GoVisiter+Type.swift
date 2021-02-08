@@ -313,6 +313,11 @@ class GoTypeVisiter: GoVisiter {
         
         let pkgName = self.cu.codes(pos: pkg.pos)
         
+        // 参见测试用例testSamePackageImprotAnalysis中的Value的定义: type Value struct { atomic.Value }
+        guard pkgName != self.pkg.name else {
+            return
+        }
+        
         guard let x = node.name else {
             return
         }
