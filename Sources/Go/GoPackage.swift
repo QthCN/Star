@@ -8,7 +8,7 @@
 import Foundation
 import Common
 
-public class GoPackage {
+public class GoPackage: CustomStringConvertible {
     // 对analyzer的引用
     weak var analyzer: GoAnalyzer?
     var path: String = ""
@@ -29,6 +29,10 @@ public class GoPackage {
     
     init(analyzer: GoAnalyzer) {
         self.analyzer = analyzer
+    }
+    
+    public var description: String {
+        return "pkg: path - \(self.path) name - \(self.name)"
     }
     
     func valid() -> Bool {

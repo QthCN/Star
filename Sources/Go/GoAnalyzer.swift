@@ -157,7 +157,7 @@ public class GoAnalyzer: Analyzer {
     @objc func doAnalysisPackage() {
         let threadName = Int(Thread.current.name!)!
         let dir = self.toAnalysisDir[threadName]
-        print("analysis \(dir.objName())")
+        print("analysis package \(dir)")
         let package = GoPackage(analyzer: self)
         // 分析这个package
         self.analysisPackage(dir, package)
@@ -252,6 +252,7 @@ public class GoAnalyzer: Analyzer {
     @objc func analysisTypeInfoOnPkg() {
         let threadName = Int(Thread.current.name!)!
         let pkg = self.analysisTypeInfoPkgs[threadName]
+        print("analysis package type info \(pkg)")
         for (path, cu) in pkg.files {
             let typeVisiter = GoTypeVisiter(cu: cu, pkg: pkg, file: pkg.fileObjs[path]!)
             typeVisiter.visit_ast(cu.getAST()! as! GoAST)
@@ -262,6 +263,7 @@ public class GoAnalyzer: Analyzer {
     @objc func analysisSymbolInfoOnPkg() {
         let threadName = Int(Thread.current.name!)!
         let pkg = self.analysisSymbolInfoPkgs[threadName]
+        print("analysis package symbol info \(pkg)")
         for (path, cu) in pkg.files {
             let exprVisiter = GoExprVisiter(cu: cu, pkg: pkg, file: pkg.fileObjs[path]!)
             exprVisiter.visit_ast(cu.getAST()! as! GoAST)
