@@ -22,7 +22,7 @@ open class Scope {
     
     public func addChild(c: Scope) {
         self.lock.lock()
-        self.children.append(self)
+        self.children.append(c)
         self.lock.unlock()
     }
     
