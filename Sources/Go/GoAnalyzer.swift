@@ -43,18 +43,29 @@ public class GoAnalyzer: Analyzer {
     }
     
     func isGoProject() -> Bool {
-        // 搜索两层目录看是否有go结尾的文件，有的话就认为是go的项目
+        // 搜索三层目录看是否有go结尾的文件或go.mod，有的话就认为是go的项目
         let topDirItems = self.fs.listItems(path: FileSystemObject())
         for topDirItem in topDirItems {
-            if !topDirItem.dir() && topDirItem.objName().hasSuffix(".go") {
+            if !topDirItem.dir() && (topDirItem.objName().hasSuffix(".go") || topDirItem.objName() == "go.mod") {
                 return true
             }
             
             if topDirItem.dir() {
                 let subDirItems = self.fs.listItems(path: topDirItem)
                 for subDirItem in subDirItems {
-                    if !subDirItem.dir() && subDirItem.objName().hasSuffix(".go") {
+                    if !subDirItem.dir() && (subDirItem.objName().hasSuffix(".go") || subDirItem.objName() == "go.mod") {
                         return true
+                    }
+                }
+                
+                for subDirItem in subDirItems {
+                    if subDirItem.dir() {
+                        let subSubDirItems = self.fs.listItems(path: subDirItem)
+                        for subSubDirItem in subSubDirItems {
+                            if !subSubDirItem.dir() && (subSubDirItem.objName().hasSuffix(".go") || subSubDirItem.objName() == "go.mod") {
+                                return true
+                            }
+                        }
                     }
                 }
             }
