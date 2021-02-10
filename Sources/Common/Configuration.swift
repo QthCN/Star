@@ -9,7 +9,10 @@ import Foundation
 
 
 public class Configuration {
-    public init() {
-        
+    
+    public var thread_num: Int
+    
+    public init(thread_num: Int = 32) {
+        self.thread_num = thread_num
     }
 }
