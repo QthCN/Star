@@ -123,6 +123,8 @@ final class GoAnalyzerTests: XCTestCase {
         //let scope = package.scope
         //scope.dump()
         
+        XCTAssertTrue(analyzer.cu(fs: FileSystemObject(path: "", name: "main.go", isDir: false)) != nil)
+        
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "ast", line: 3, col: 8, sIdx: 1))
         
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "S1", line: 4, col: 6))

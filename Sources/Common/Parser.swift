@@ -38,6 +38,10 @@ public class CompilationUnion {
         return self.ast
     }
     
+    public func getContent() -> String.UTF8View {
+        return self.content
+    }
+    
     public func codes(pos: Position) -> String {
         let startIndex = self.content.index(self.content.startIndex, offsetBy: pos.startBytes)
         let endIndex = self.content.index(self.content.startIndex, offsetBy: pos.endBytes)

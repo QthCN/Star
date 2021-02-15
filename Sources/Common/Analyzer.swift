@@ -9,4 +9,5 @@ import Foundation
 
 public protocol Analyzer {
     func analysis(fs: FileSystem, config: Configuration)
+    func cu(fs: FileSystemObject) -> CompilationUnion?
 }

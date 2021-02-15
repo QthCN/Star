@@ -31,6 +31,14 @@ public class GoAnalyzer: Analyzer {
     
     public init() {}
     
+    public func cu(fs: FileSystemObject) -> CompilationUnion? {
+        if let pkg = self.packages[fs.objPath()] {
+            return pkg.getFile(name: fs.name)
+        } else {
+            return nil
+        }
+    }
+    
     public func listPackages() -> [String:GoPackage] {
         return self.packages
     }
