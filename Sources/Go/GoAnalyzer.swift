@@ -33,7 +33,7 @@ public class GoAnalyzer: Analyzer {
     
     public func cu(fs: FileSystemObject) -> CompilationUnion? {
         if let pkg = self.packages[fs.objPath()] {
-            return pkg.getFile(name: fs.name)
+            return pkg.getFile(name: fs.objName())
         } else {
             return nil
         }

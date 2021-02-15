@@ -35,6 +35,9 @@ public class FileSystemObject: CustomStringConvertible, Equatable {
         } else if self.name == "" {
             return self.path
         } else {
+            if self.path.hasSuffix("/") || self.name .hasPrefix("/") {
+                return "\(self.path)\(self.name)"
+            }
             return "\(self.path)/\(self.name)"
         }
     }
