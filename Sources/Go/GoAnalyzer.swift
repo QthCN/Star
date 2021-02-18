@@ -424,4 +424,8 @@ public class GoAnalyzer: Analyzer {
     }
     
     
+    public func symbolInfo(cu: CompilationUnion, offset: Int) -> SymbolInfo? {
+        return nil
+    }
+    
 }
