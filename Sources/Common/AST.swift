@@ -113,11 +113,11 @@ public class Position: CustomStringConvertible {
 
 // 某个Symbol在整个项目中的位置
 public class SymbolPosition: CustomStringConvertible, Equatable {
-    var file: FileSystemObject
+    public var file: FileSystemObject
     // 从0开始
-    var line: Int
+    public var line: Int
     // 从0开始
-    var col: Int
+    public var col: Int
     weak var node: AST! = nil
 
     public init(file: FileSystemObject, line: Int, col: Int, node: AST) {
