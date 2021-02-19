@@ -9,15 +9,19 @@ import Foundation
 import Common
 
 
-class GoType: Type {
+public class GoType: Type {
     var symbolPosition: SymbolPosition? = nil
     
-    func position() -> SymbolPosition? {
+    public func position() -> SymbolPosition? {
         return self.symbolPosition
     }
     
     func setPosition(sp: SymbolPosition) {
         self.symbolPosition = sp
+    }
+    
+    public func toString() -> String {
+        return "\(self)"
     }
 }
 

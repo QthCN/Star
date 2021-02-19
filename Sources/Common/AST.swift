@@ -70,6 +70,19 @@ open class AST: CustomStringConvertible {
         }
         return nil
     }
+    
+    public func find(offset: Int) -> AST? {
+        if self.pos.startBytes <= offset && self.pos.endBytes > offset {
+            for child in self.children_nodes {
+                if let node = child.find(offset: offset) {
+                    return node
+                }
+            }
+            return self
+        } else {
+            return nil
+        }
+    }
 
 }
 

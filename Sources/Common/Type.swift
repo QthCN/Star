@@ -9,4 +9,5 @@ import Foundation
 
 public protocol Type {
     func position() -> SymbolPosition?
+    func toString() -> String
 }

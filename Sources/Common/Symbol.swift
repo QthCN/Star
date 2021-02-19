@@ -9,5 +9,12 @@ import Foundation
 
 
 public class SymbolInfo {
+    public var content: String = ""
+    public var node: AST?
+    public var type: Type?
+    public var declarations: [SymbolPosition] = []
     
+    public init() {
+        
+    }
 }

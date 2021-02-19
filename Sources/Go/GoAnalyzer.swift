@@ -425,7 +425,21 @@ public class GoAnalyzer: Analyzer {
     
     
     public func symbolInfo(cu: CompilationUnion, offset: Int) -> SymbolInfo? {
-        return nil
+        guard let node = cu.getAST()?.find(offset: offset) else {
+            return nil
+        }
+        
+        let symbolInfo = SymbolInfo()
+        symbolInfo.content = cu.codes(pos: node.pos)
+        symbolInfo.node = node
+        if let expr = node as? UASTExpr {
+            symbolInfo.type = expr.getType()
+        }
+        if let ident = node as? UASTIdentifier {
+            symbolInfo.declarations = ident.listDeclarations()
+        }
+        
+        return symbolInfo
     }
     
 }
