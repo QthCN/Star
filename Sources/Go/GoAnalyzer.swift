@@ -17,8 +17,10 @@ public class GoAnalyzer: Analyzer {
     private var sem = DispatchSemaphore(value: 0)
     
     /// 分析结果
-    // package列表 key为路径
+    // package列表 key为import路径
     var packages: [String:GoPackage] = [:]
+    // package列表，key为package目录路径
+    var fsPackages: [String:GoPackage] = [:]
     // GoMod文件
     var goMod: GoMod?
     // module前缀
@@ -32,7 +34,7 @@ public class GoAnalyzer: Analyzer {
     public init() {}
     
     public func cu(fs: FileSystemObject) -> CompilationUnion? {
-        if let pkg = self.packages[fs.objPath()] {
+        if let pkg = self.fsPackages[fs.objPath()] {
             return pkg.getFile(name: fs.objName())
         } else {
             return nil
@@ -48,7 +50,7 @@ public class GoAnalyzer: Analyzer {
         self.config = config
         self.reset()
         self.analysis()
-        print("go analysis finished, modulePrefix \(self.modulePrefix), packages: \(self.packages)")
+        print("go analysis finished, modulePrefix \(self.modulePrefix), packages(by fs): \(self.fsPackages.keys)")
     }
     
     func isGoProject() -> Bool {
@@ -208,6 +210,7 @@ public class GoAnalyzer: Analyzer {
             package.path = dir.rpath()
             
             lock.lock()
+            self.fsPackages[dir.rpath()] = package
             self.packages[p] = package
             lock.unlock()
         }
