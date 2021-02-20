@@ -199,6 +199,9 @@ public class GoAnalyzer: Analyzer {
         // 判断package是否有效
         if package.valid() {
             var p = "\(self.modulePrefix)/\(dir.rpath())"
+            if self.modulePrefix == "" {
+                p = dir.rpath()
+            }
             if p.hasSuffix("/") {
                 p = self.modulePrefix
             }
