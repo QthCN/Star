@@ -48,6 +48,7 @@ public class GoAnalyzer: Analyzer {
         self.config = config
         self.reset()
         self.analysis()
+        print("go analysis finished, modulePrefix \(self.modulePrefix), packages: \(self.packages)")
     }
     
     func isGoProject() -> Bool {
