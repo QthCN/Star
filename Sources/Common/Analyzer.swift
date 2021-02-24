@@ -11,4 +11,5 @@ public protocol Analyzer {
     func analysis(fs: FileSystem, config: Configuration)
     func cu(fs: FileSystemObject) -> CompilationUnion?
     func symbolInfo(cu: CompilationUnion, offset: Int) -> SymbolInfo?
+    func callGraph(cu: CompilationUnion, symbol: SymbolInfo) -> CGCaller?
 }

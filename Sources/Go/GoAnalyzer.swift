@@ -439,14 +439,28 @@ public class GoAnalyzer: Analyzer {
         let symbolInfo = SymbolInfo()
         symbolInfo.content = cu.codes(pos: node.pos)
         symbolInfo.node = node
+        
+        // 获取type信息
         if let expr = node as? UASTExpr {
             symbolInfo.type = expr.getType()
         }
+        
+        // 获取decl信息
         if let ident = node as? UASTIdentifier {
             symbolInfo.declarations = ident.listDeclarations()
         }
         
         return symbolInfo
+    }
+    
+    public func callGraph(cu: CompilationUnion, symbol: SymbolInfo) -> CGCaller? {
+        guard let node = symbol.node else { return nil }
+        guard let methodDeclNode = node.parent as? goast_method_declaration else { return nil }
+        if !(symbol.type is GoFunc || symbol.type is GoSignatureType) {
+            return nil
+        }
+        return GenCallGraph_goast_method_declaration(cu: cu, node: methodDeclNode)
+        
     }
     
 }

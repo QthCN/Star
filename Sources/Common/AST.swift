@@ -9,8 +9,8 @@ import Foundation
 
 open class AST: CustomStringConvertible {
     public let pos: Position
-    weak var parent: AST?
-    var children_nodes: [AST] = []
+    public weak var parent: AST?
+    public var children_nodes: [AST] = []
     // 当前AST在文件中的Scope
     weak var scope: Scope!
     
