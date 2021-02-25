@@ -11,39 +11,37 @@ import Common
 func GenCallGraph_ast(cu: CompilationUnion, node: AST) -> [CGNode] {
     var records: [CGNode] = []
     
-    for child_node in node.children_nodes {
-        switch child_node {
-        case let child as goast_call_expression:
-            let child_records = GenCallGraph_goast_call_expression(cu: cu, node: child)
+    switch node {
+    case let child as goast_call_expression:
+        let child_records = GenCallGraph_goast_call_expression(cu: cu, node: child)
+        for cr in child_records {
+            records.append(cr)
+        }
+    case let child as goast_if_statement:
+        if let record = GenCallGraph_goast_if_statement(cu: cu, node: child) {
+            records.append(record)
+        }
+    case let child as goast_for_statement:
+        if let record = GenCallGraph_goast_for_statement(cu: cu, node: child) {
+            records.append(record)
+        }
+    case let child as goast_select_statement:
+        if let record = GenCallGraph_goast_select_statement(cu: cu, node: child) {
+            records.append(record)
+        }
+    case let child as goast_expression_switch_statement:
+        if let record = GenCallGraph_goast_expression_switch_statement(cu: cu, node: child) {
+            records.append(record)
+        }
+    case let child as goast_type_switch_statement:
+        if let record = GenCallGraph_goast_type_switch_statement(cu: cu, node: child) {
+            records.append(record)
+        }
+    default:
+        for child_node in node.children_nodes {
+            let child_records = GenCallGraph_ast(cu: cu, node: child_node)
             for cr in child_records {
                 records.append(cr)
-            }
-        case let child as goast_if_statement:
-            if let record = GenCallGraph_goast_if_statement(cu: cu, node: child) {
-                records.append(record)
-            }
-        case let child as goast_for_statement:
-            if let record = GenCallGraph_goast_for_statement(cu: cu, node: child) {
-                records.append(record)
-            }
-        case let child as goast_select_statement:
-            if let record = GenCallGraph_goast_select_statement(cu: cu, node: child) {
-                records.append(record)
-            }
-        case let child as goast_expression_switch_statement:
-            if let record = GenCallGraph_goast_expression_switch_statement(cu: cu, node: child) {
-                records.append(record)
-            }
-        case let child as goast_type_switch_statement:
-            if let record = GenCallGraph_goast_type_switch_statement(cu: cu, node: child) {
-                records.append(record)
-            }
-        default:
-            for child_child_node in child_node.children_nodes {
-                let child_records = GenCallGraph_ast(cu: cu, node: child_child_node)
-                for cr in child_records {
-                    records.append(cr)
-                }
             }
         }
     }
