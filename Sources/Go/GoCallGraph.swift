@@ -61,6 +61,16 @@ func GenCallGraph_goast_method_declaration(cu: CompilationUnion, node: goast_met
 }
 
 
+func GenCallGraph_goast_function_declaration(cu: CompilationUnion, node: goast_function_declaration) -> CGCaller? {
+    let caller = CGCaller()
+    guard let name = node.name else { return nil }
+    caller.name = cu.codes(pos: name.pos)
+    caller.nodes = GenCallGraph_ast(cu: cu, node: node)
+    
+    return caller
+}
+
+
 func GenCallGraph_get_names_from_expr(cu: CompilationUnion, node: AST) -> String {
     switch node {
     case let name as goast_identifier:

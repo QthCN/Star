@@ -455,13 +455,19 @@ public class GoAnalyzer: Analyzer {
     
     public func callGraph(cu: CompilationUnion, symbol: SymbolInfo) -> CGCaller? {
         guard let node = symbol.node else { return nil }
-        print(type(of: node), type(of: node.parent!), cu.codes(pos: node.parent!.pos))
-        guard let methodDeclNode = node.parent as? goast_method_declaration else { return nil }
+        print("callGrap: ", type(of: node), type(of: node.parent!), cu.codes(pos: node.parent!.pos))
+        
         if !(symbol.type is GoFunc || symbol.type is GoSignatureType) {
             return nil
         }
-        return GenCallGraph_goast_method_declaration(cu: cu, node: methodDeclNode)
         
+        if let methodDeclNode = node.parent as? goast_method_declaration {
+            return GenCallGraph_goast_method_declaration(cu: cu, node: methodDeclNode)
+        } else if let funcDeclNode = node.parent as? goast_function_declaration {
+            return GenCallGraph_goast_function_declaration(cu: cu, node: funcDeclNode)
+        } else {
+            return nil
+        }
     }
     
 }
