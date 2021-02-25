@@ -92,10 +92,10 @@ func GenCallGraph_get_names_from_expr(cu: CompilationUnion, node: AST) -> String
         } else {
             return ""
         }
+        return s
     default:
         return ""
     }
-    return ""
 }
 
 
