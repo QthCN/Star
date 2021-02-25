@@ -455,7 +455,7 @@ public class GoAnalyzer: Analyzer {
     
     public func callGraph(cu: CompilationUnion, symbol: SymbolInfo) -> CGCaller? {
         guard let node = symbol.node else { return nil }
-        print(type(of: node), type(of: node.parent))
+        print(type(of: node), type(of: node.parent!), cu.codes(pos: node.parent!.pos))
         guard let methodDeclNode = node.parent as? goast_method_declaration else { return nil }
         if !(symbol.type is GoFunc || symbol.type is GoSignatureType) {
             return nil
