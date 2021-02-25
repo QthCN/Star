@@ -55,8 +55,10 @@ func GenCallGraph_goast_method_declaration(cu: CompilationUnion, node: goast_met
     let caller = CGCaller()
     guard let name = node.name else { return nil }
     caller.name = cu.codes(pos: name.pos)
-    caller.nodes = GenCallGraph_ast(cu: cu, node: node)
-    
+    if let body = node.body {
+        caller.nodes = GenCallGraph_ast(cu: cu, node: body)
+    }
+
     return caller
 }
 
@@ -65,7 +67,9 @@ func GenCallGraph_goast_function_declaration(cu: CompilationUnion, node: goast_f
     let caller = CGCaller()
     guard let name = node.name else { return nil }
     caller.name = cu.codes(pos: name.pos)
-    caller.nodes = GenCallGraph_ast(cu: cu, node: node)
+    if let body = node.body {
+        caller.nodes = GenCallGraph_ast(cu: cu, node: body)
+    }
     
     return caller
 }
