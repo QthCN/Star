@@ -53,4 +53,27 @@ public class CGCondition: CGNode {
     public override init() {
         
     }
+    
+    public func hasData() -> Bool {
+        if self.nodesHasData(nodes: self.initialize) { return true }
+        if self.nodesHasData(nodes: self.condition) { return true }
+        if self.nodesHasData(nodes: self.update) { return true }
+        for (_, nodes) in self.branch {
+            if self.nodesHasData(nodes: nodes) { return true }
+        }
+        return false
+    }
+    
+    public func nodesHasData(nodes: [CGNode]) -> Bool {
+        for node in nodes {
+            if node is CGCallee {
+                return true
+            } else if node is CGCondition {
+                if (node as! CGCondition).hasData() {
+                    return true
+                }
+            }
+        }
+        return false
+    }
 }
