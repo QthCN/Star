@@ -450,7 +450,33 @@ public class GoAnalyzer: Analyzer {
             symbolInfo.declarations = ident.listDeclarations()
         }
         
+        // 获取动作类型
+        // CallGraph
+        if self.ifSymbolSupportCallGraph(symbol: symbolInfo) {
+            symbolInfo.actions.append(.callGraph)
+        }
+        if self.ifSymbolSupportTypeDetail(symbol: symbolInfo) {
+            symbolInfo.actions.append(.typeDetail)
+        }
+        
         return symbolInfo
+    }
+    
+    func ifSymbolSupportCallGraph(symbol: SymbolInfo) -> Bool {
+        guard let node = symbol.node else { return false }
+        if !(symbol.type is GoFunc || symbol.type is GoSignatureType) {
+            return false
+        }
+        if node.parent is goast_method_declaration {
+            return true
+        } else if node.parent is goast_function_declaration {
+            return true
+        }
+        return true
+    }
+    
+    func ifSymbolSupportTypeDetail(symbol: SymbolInfo) -> Bool {
+        return true
     }
     
     public func callGraph(cu: CompilationUnion, symbol: SymbolInfo) -> CGCaller? {

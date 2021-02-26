@@ -12,29 +12,29 @@ func GenCallGraph_ast(cu: CompilationUnion, node: AST) -> [CGNode] {
     var records: [CGNode] = []
     
     switch node {
-    case let child as goast_call_expression:
-        let child_records = GenCallGraph_goast_call_expression(cu: cu, node: child)
-        for cr in child_records {
+    case let target as goast_call_expression:
+        let target_records = GenCallGraph_goast_call_expression(cu: cu, node: target)
+        for cr in target_records {
             records.append(cr)
         }
-    case let child as goast_if_statement:
-        if let record = GenCallGraph_goast_if_statement(cu: cu, node: child) {
+    case let target as goast_if_statement:
+        if let record = GenCallGraph_goast_if_statement(cu: cu, node: target) {
             records.append(record)
         }
-    case let child as goast_for_statement:
-        if let record = GenCallGraph_goast_for_statement(cu: cu, node: child) {
+    case let target as goast_for_statement:
+        if let record = GenCallGraph_goast_for_statement(cu: cu, node: target) {
             records.append(record)
         }
-    case let child as goast_select_statement:
-        if let record = GenCallGraph_goast_select_statement(cu: cu, node: child) {
+    case let target as goast_select_statement:
+        if let record = GenCallGraph_goast_select_statement(cu: cu, node: target) {
             records.append(record)
         }
-    case let child as goast_expression_switch_statement:
-        if let record = GenCallGraph_goast_expression_switch_statement(cu: cu, node: child) {
+    case let target as goast_expression_switch_statement:
+        if let record = GenCallGraph_goast_expression_switch_statement(cu: cu, node: target) {
             records.append(record)
         }
-    case let child as goast_type_switch_statement:
-        if let record = GenCallGraph_goast_type_switch_statement(cu: cu, node: child) {
+    case let target as goast_type_switch_statement:
+        if let record = GenCallGraph_goast_type_switch_statement(cu: cu, node: target) {
             records.append(record)
         }
     default:
