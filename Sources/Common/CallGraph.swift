@@ -33,6 +33,8 @@ public class CGCaller: CGNode {
 public class CGCallee: CGNode {
     // 被调用节点函数名
     public var name: String = ""
+    // 被调用节点函数参数
+    public var arguments: [CGNode] = []
     
     public override init(pos: String) {
         super.init(pos: pos)

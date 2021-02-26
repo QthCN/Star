@@ -113,7 +113,7 @@ func GenCallGraph_goast_call_expression(cu: CompilationUnion, node: goast_call_e
     for child_node in node.children_nodes {
         let child_records = GenCallGraph_ast(cu: cu, node: child_node)
         for cr in child_records {
-            records.append(cr)
+            callee.arguments.append(cr)
         }
     }
     return records
