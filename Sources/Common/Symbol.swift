@@ -10,7 +10,7 @@ import Foundation
 
 public enum SymbolInfoAction: String {
     case callGraph = "Call Flow Graph"
-    case typeDetail = "Type Detail"
+    case typeDetail = "Type Detail Graph"
 }
 
 
