@@ -9,8 +9,10 @@ import Foundation
 
 
 public class CGNode {
-    public init() {
-        
+    public var pos: String = ""
+    
+    public init(pos: String) {
+        self.pos = pos
     }
 }
 
@@ -22,8 +24,8 @@ public class CGCaller: CGNode {
     // 被调用节点信息
     public var nodes: [CGNode] = []
     
-    public override init() {
-        
+    public override init(pos: String) {
+        super.init(pos: pos)
     }
 }
 
@@ -32,8 +34,8 @@ public class CGCallee: CGNode {
     // 被调用节点函数名
     public var name: String = ""
     
-    public override init() {
-        
+    public override init(pos: String) {
+        super.init(pos: pos)
     }
 }
 
@@ -50,8 +52,8 @@ public class CGCondition: CGNode {
     // 分叉，key为分叉条件，value为对应分叉调用
     public var branch: [String:[CGNode]] = [:]
     
-    public override init() {
-        
+    public override init(pos: String) {
+        super.init(pos: pos)
     }
     
     public func hasData() -> Bool {

@@ -50,7 +50,7 @@ func GenCallGraph_ast(cu: CompilationUnion, node: AST) -> [CGNode] {
 }
 
 func GenCallGraph_goast_method_declaration(cu: CompilationUnion, node: goast_method_declaration) -> CGCaller? {
-    let caller = CGCaller()
+    let caller = CGCaller(pos: "\(node.pos.startLine+1):\(node.pos.startCol+1)")
     guard let name = node.name else { return nil }
     caller.name = cu.codes(pos: name.pos)
     if let body = node.body {
@@ -62,7 +62,7 @@ func GenCallGraph_goast_method_declaration(cu: CompilationUnion, node: goast_met
 
 
 func GenCallGraph_goast_function_declaration(cu: CompilationUnion, node: goast_function_declaration) -> CGCaller? {
-    let caller = CGCaller()
+    let caller = CGCaller(pos: "\(node.pos.startLine+1):\(node.pos.startCol+1)")
     guard let name = node.name else { return nil }
     caller.name = cu.codes(pos: name.pos)
     if let body = node.body {
@@ -101,7 +101,7 @@ func GenCallGraph_get_names_from_expr(cu: CompilationUnion, node: AST) -> String
 
 func GenCallGraph_goast_call_expression(cu: CompilationUnion, node: goast_call_expression) -> [CGNode] {
     var records: [CGNode] = []
-    let callee = CGCallee()
+    let callee = CGCallee(pos: "\(node.pos.startLine+1):\(node.pos.startCol+1)")
     guard let function = node.function else { return [] }
     callee.name = GenCallGraph_get_names_from_expr(cu: cu, node: function)
     if callee.name == "" {
@@ -120,7 +120,7 @@ func GenCallGraph_goast_call_expression(cu: CompilationUnion, node: goast_call_e
 }
 
 func GenCallGraph_goast_if_statement(cu: CompilationUnion, node: goast_if_statement) -> CGCondition? {
-    let condition = CGCondition()
+    let condition = CGCondition(pos: "\(node.pos.startLine+1):\(node.pos.startCol+1)")
     condition.name = "If"
     
     if let initialize = node.initializer {
@@ -144,7 +144,7 @@ func GenCallGraph_goast_if_statement(cu: CompilationUnion, node: goast_if_statem
 
 
 func GenCallGraph_goast_for_statement(cu: CompilationUnion, node: goast_for_statement) -> CGCondition? {
-    let condition = CGCondition()
+    let condition = CGCondition(pos: "\(node.pos.startLine+1):\(node.pos.startCol+1)")
     condition.name = "For"
     
     if let body = node.body {
@@ -174,7 +174,7 @@ func GenCallGraph_goast_for_statement(cu: CompilationUnion, node: goast_for_stat
 }
 
 func GenCallGraph_goast_select_statement(cu: CompilationUnion, node: goast_select_statement) -> CGCondition? {
-    let condition = CGCondition()
+    let condition = CGCondition(pos: "\(node.pos.startLine+1):\(node.pos.startCol+1)")
     condition.name = "Select"
     
     var caseIdx = 1
@@ -203,7 +203,7 @@ func GenCallGraph_goast_select_statement(cu: CompilationUnion, node: goast_selec
 
 
 func GenCallGraph_goast_expression_switch_statement(cu: CompilationUnion, node: goast_expression_switch_statement) -> CGCondition? {
-    let condition = CGCondition()
+    let condition = CGCondition(pos: "\(node.pos.startLine+1):\(node.pos.startCol+1)")
     condition.name = "Switch"
     
     if let initializer = node.initializer {
@@ -238,7 +238,7 @@ func GenCallGraph_goast_expression_switch_statement(cu: CompilationUnion, node: 
 }
 
 func GenCallGraph_goast_type_switch_statement(cu: CompilationUnion, node: goast_type_switch_statement) -> CGCondition? {
-    let condition = CGCondition()
+    let condition = CGCondition(pos: "\(node.pos.startLine+1):\(node.pos.startCol+1)")
     condition.name = "Type Switch"
     
     if let initializer = node.initializer {
