@@ -15,6 +15,8 @@ public enum SymbolInfoAction: String {
 
 
 public class SymbolInfo {
+    // 符号所在的cu
+    public weak var cu: CompilationUnion! = nil
     // 符号的具体内容
     public var content: String = ""
     // 符号对应的AST节点

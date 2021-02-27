@@ -140,7 +140,7 @@ class GoVar: CustomStringConvertible {
     
     
     public var description: String {
-        return "\(self.name ?? "Unknown")[\(self.typ ?? GoUnknownType())]"
+        return "\(self.name ?? "")[\(self.typ ?? GoUnknownType())]"
     }
 }
 
@@ -308,7 +308,7 @@ class GoNamedType: GoType, CustomStringConvertible {
     }
     
     public var description: String {
-        return "\(self.name ?? "GoNamedType")"
+        return "\(self.name ?? "")"
     }
 }
 
@@ -324,6 +324,6 @@ class GoBaseFieldType: GoType, CustomStringConvertible {
     }
     
     public var description: String {
-        return "\(self.package ?? "GoBaseFieldTypePkg").\(self.name ?? "GoBaseFieldTypeName")"
+        return "\(self.package ?? "").\(self.name ?? "")"
     }
 }

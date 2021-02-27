@@ -126,7 +126,7 @@ public class GoAnalyzer: Analyzer {
         self.analysisSymbolInfo()
     }
     
-    func analysisImportDependGraph() {
+    private func analysisImportDependGraph() {
         for (_, pkg) in self.packages {
             for importPath in pkg.imports {
                 if let importPkg = self.packages[importPath] {
@@ -136,9 +136,9 @@ public class GoAnalyzer: Analyzer {
         }
     }
     
-    var toAnalysisDir: [FileSystemObject] = []
+    private var toAnalysisDir: [FileSystemObject] = []
     
-    func analysisPackages(_ dir: FileSystemObject) {
+    private func analysisPackages(_ dir: FileSystemObject) {
         print("analysis \(dir.objName())")
         self.toAnalysisDir.append(dir)
         
@@ -156,7 +156,7 @@ public class GoAnalyzer: Analyzer {
     
     private let lock = NSLock()
     
-    func analysisPackageDirs() {
+    private func analysisPackageDirs() {
         sem = DispatchSemaphore(value: 0)
         var workers: [Thread] = []
         
@@ -190,7 +190,7 @@ public class GoAnalyzer: Analyzer {
         self.toAnalysisDir = []
     }
     
-    @objc func doAnalysisPackage() {
+    @objc private  func doAnalysisPackage() {
         let threadName = Int(Thread.current.name!)!
         let dir = self.toAnalysisDir[threadName]
         print("analysis package \(dir)")
@@ -218,7 +218,7 @@ public class GoAnalyzer: Analyzer {
         sem.signal()
     }
     
-    func analysisPackage(_ directory: FileSystemObject, _ package: GoPackage) {
+    private func analysisPackage(_ directory: FileSystemObject, _ package: GoPackage) {
         let dirItems = self.fs.listItems(path: directory)
         // 设置同一个package下的parser共用同一个scope
         let parser = GoParser()
@@ -289,7 +289,7 @@ public class GoAnalyzer: Analyzer {
         return true
     }
     
-    @objc func analysisTypeInfoOnPkg() {
+    @objc private  func analysisTypeInfoOnPkg() {
         let threadName = Int(Thread.current.name!)!
         let pkg = self.analysisTypeInfoPkgs[threadName]
         print("analysis package type info \(pkg)")
@@ -300,7 +300,7 @@ public class GoAnalyzer: Analyzer {
         sem.signal()
     }
     
-    @objc func analysisSymbolInfoOnPkg() {
+    @objc private  func analysisSymbolInfoOnPkg() {
         let threadName = Int(Thread.current.name!)!
         let pkg = self.analysisSymbolInfoPkgs[threadName]
         print("analysis package symbol info \(pkg)")
@@ -314,7 +314,7 @@ public class GoAnalyzer: Analyzer {
     
     private var analysisSymbolInfoPkgs: [GoPackage] = []
     
-    func analysisSymbolInfo() {
+    private func analysisSymbolInfo() {
         // 从底层package开始从下往上处理。每次处理时从package中挑选 没有depPackage的 或者 所有的depPackage都已经被处理 的package进行处理
         var pkgs: [GoPackage] = []
         while true {
@@ -373,7 +373,7 @@ public class GoAnalyzer: Analyzer {
     
     private var analysisTypeInfoPkgs: [GoPackage] = []
     
-    func analysisTypeInfo() {
+    private func analysisTypeInfo() {
         var pkgs: [GoPackage] = []
         while true {
             // 执行分析
@@ -437,6 +437,7 @@ public class GoAnalyzer: Analyzer {
         }
         
         let symbolInfo = SymbolInfo()
+        symbolInfo.cu = cu
         symbolInfo.content = cu.codes(pos: node.pos)
         symbolInfo.node = node
         
@@ -462,21 +463,33 @@ public class GoAnalyzer: Analyzer {
         return symbolInfo
     }
     
-    func ifSymbolSupportCallGraph(symbol: SymbolInfo) -> Bool {
+    private func ifSymbolSupportCallGraph(symbol: SymbolInfo) -> Bool {
         guard let node = symbol.node else { return false }
+        guard node is goast_identifier || node is goast_field_identifier else { return false }
         if node.parent is goast_method_declaration {
-            return true
+            let parentNode = node.parent as! goast_method_declaration
+            if parentNode.name === node {
+                return true
+            } else {
+                return false
+            }
         } else if node.parent is goast_function_declaration {
-            return true
+            let parentNode = node.parent as! goast_function_declaration
+            if parentNode.name === node {
+                return true
+            } else {
+                return false
+            }
         }
         return true
     }
     
-    func ifSymbolSupportTypeDetail(symbol: SymbolInfo) -> Bool {
+    private func ifSymbolSupportTypeDetail(symbol: SymbolInfo) -> Bool {
         return true
     }
     
-    public func callGraph(cu: CompilationUnion, symbol: SymbolInfo) -> CGCaller? {
+    public func callGraph(symbol: SymbolInfo) -> CGCaller? {
+        guard let cu = symbol.cu else { return nil }
         guard let node = symbol.node else { return nil }
         print("callGraph: ", type(of: node), type(of: node.parent!))
         
