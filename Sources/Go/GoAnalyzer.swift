@@ -481,7 +481,7 @@ public class GoAnalyzer: Analyzer {
                 return false
             }
         }
-        return true
+        return false
     }
     
     private func ifSymbolSupportTypeDetail(symbol: SymbolInfo) -> Bool {
