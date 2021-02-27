@@ -464,9 +464,6 @@ public class GoAnalyzer: Analyzer {
     
     func ifSymbolSupportCallGraph(symbol: SymbolInfo) -> Bool {
         guard let node = symbol.node else { return false }
-        if !(symbol.type is GoFunc || symbol.type is GoSignatureType) {
-            return false
-        }
         if node.parent is goast_method_declaration {
             return true
         } else if node.parent is goast_function_declaration {
@@ -482,10 +479,6 @@ public class GoAnalyzer: Analyzer {
     public func callGraph(cu: CompilationUnion, symbol: SymbolInfo) -> CGCaller? {
         guard let node = symbol.node else { return nil }
         print("callGraph: ", type(of: node), type(of: node.parent!))
-        
-        if !(symbol.type is GoFunc || symbol.type is GoSignatureType) {
-            return nil
-        }
         
         if let methodDeclNode = node.parent as? goast_method_declaration {
             return GenCallGraph_goast_method_declaration(cu: cu, node: methodDeclNode)
