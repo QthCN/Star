@@ -174,6 +174,7 @@ final class GoAnalyzerTests: XCTestCase {
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "s1", line: 51, col: 7, sIdx: 1))
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "S1", line: 4, col: 6, sIdx: 3))
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "s1", line: 51, col: 7, sIdx: 2))
+        XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "S1MethodXXX", line: 51, col: 15, sIdx: 1))
         
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "value001", line: 53, col: 5, sIdx: 1))
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "value001", line: 53, col: 5, sIdx: 2))
@@ -204,10 +205,10 @@ final class GoAnalyzerTests: XCTestCase {
         XCTAssertTrue(self.identNameDeclPosIs(cu: cu, ast: ast, s: "fi001", line: 119, col: 7, sIdx: 3))
         
         
-        //let identifiers = finds_UASTIdentifier(ast: ast)
-        //for identifier in identifiers {
-            //print(identifier, identifier.listDeclarations())
-        //}
+        let identifiers = finds_UASTIdentifier(ast: ast)
+        for identifier in identifiers {
+            print(identifier, identifier.listDeclarations())
+        }
     }
     
     func testTypeAnalysis() {

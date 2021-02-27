@@ -260,6 +260,12 @@ class GoDeclVisiter: GoVisiter {
         }
         
         super.visit_method_declaration(node)
+        
+        if let name = node.name {
+            name.setDeclarations([
+                SymbolPosition(file: self.fileObject, node: name)
+            ])
+        }
     }
     
     override func visit_package_identifier(_ node: goast_package_identifier) {
