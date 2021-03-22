@@ -658,6 +658,14 @@ class GoExprVisiter: GoVisiter {
         for f in t.fields {
             if f.name == nil {
                 if let fieldType = f.typ {
+                    
+                    if let nt = fieldType as? GoNamedType {
+                        if nt.typ === t {
+                            print("NamedType with identical typ!")
+                            return nil
+                        }
+                    }
+                    
                     if let r = self.handleSelectorExprType(t: fieldType, field: field) {
                         return r
                     }

@@ -28,16 +28,27 @@ let package = Package(
                 "Common"
             ],
             path: "Sources/Go"),
+        // CPP C++语言相关的源码
+        .target(
+            name: "CPP",
+            dependencies: [
+                "Common"
+            ],
+            path: "Sources/CPP"),
         // Semantic为对外输出的Module
         .target(
             name: "Semantic",
             dependencies: [
-                "Common", "Go"
+                "Common", "Go", "CPP"
             ],
             path: "Sources/Semantic"),
         .testTarget(
             name: "GoTests",
             dependencies: ["Go"],
             path: "Tests/GoTests"),
+        .testTarget(
+            name: "CPPTests",
+            dependencies: ["CPP"],
+            path: "Tests/CPPTests"),
     ]
 )

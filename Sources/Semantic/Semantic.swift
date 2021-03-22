@@ -8,11 +8,13 @@
 import Foundation
 import Common
 import Go
+import CPP
 
 
 public class Semantic {
     private let analyzers: [SupportedLanguege: Analyzer] = [
         .go: GoAnalyzer(),
+        .cpp: CPPAnalyzer(),
     ]
     
     // 分析某个项目
