@@ -28,6 +28,13 @@ let package = Package(
                 "Common"
             ],
             path: "Sources/Go"),
+        // Java Java语言相关的源码
+        .target(
+            name: "Java",
+            dependencies: [
+                "Common"
+            ],
+            path: "Sources/Java"),
         // CPP C++语言相关的源码
         .target(
             name: "CPP",
@@ -39,7 +46,7 @@ let package = Package(
         .target(
             name: "Semantic",
             dependencies: [
-                "Common", "Go", "CPP"
+                "Common", "Go", "CPP", "Java"
             ],
             path: "Sources/Semantic"),
         .testTarget(
@@ -50,5 +57,9 @@ let package = Package(
             name: "CPPTests",
             dependencies: ["CPP"],
             path: "Tests/CPPTests"),
+        .testTarget(
+            name: "JavaTests",
+            dependencies: ["Java"],
+            path: "Tests/JavaTests"),
     ]
 )

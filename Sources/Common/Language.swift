@@ -11,4 +11,5 @@ import Foundation
 public enum SupportedLanguege: String {
     case go = "go"
     case cpp = "cpp"
+    case java = "java"
 }
