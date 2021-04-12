@@ -1,4 +1,4 @@
-// This file is auto-generated from ts2st_JavaAST_20210407220827
+// This file is auto-generated from ts2st_JavaAST_20210411145127
 
 import Foundation
 import Common
@@ -767,6 +767,15 @@ extension JavaParser {
     }
 
     func leave_receiver_parameter(_ node: javaast_receiver_parameter) {
+
+    }
+
+    /// callback: record_declaration
+    func enter_record_declaration() {
+
+    }
+
+    func leave_record_declaration(_ node: javaast_record_declaration) {
 
     }
 

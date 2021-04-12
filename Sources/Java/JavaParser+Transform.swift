@@ -1,4 +1,4 @@
-// This file is auto-generated from ts2st_JavaAST_20210407220827
+// This file is auto-generated from ts2st_JavaAST_20210411145127
 
 import Foundation
 import SwiftTreeSitter
@@ -381,6 +381,10 @@ extension JavaParser {
                     }
                 case "receiver_parameter":
                     if let node = self.transform_receiver_parameter(cursor, parent) {
+                        nodes.append(node)
+                    }
+                case "record_declaration":
+                    if let node = self.transform_record_declaration(cursor, parent) {
                         nodes.append(node)
                     }
                 case "requires_modifier":
@@ -1510,6 +1514,10 @@ extension JavaParser {
                         if let child = self.transform_method_declaration(cursor, node) {
                             node.children.append(child)
                         }
+                    case "record_declaration":
+                        if let child = self.transform_record_declaration(cursor, node) {
+                            node.children.append(child)
+                        }
                     case "static_initializer":
                         if let child = self.transform_static_initializer(cursor, node) {
                             node.children.append(child)
@@ -2171,6 +2179,10 @@ extension JavaParser {
                         }
                     case "method_declaration":
                         if let child = self.transform_method_declaration(cursor, node) {
+                            node.children.append(child)
+                        }
+                    case "record_declaration":
+                        if let child = self.transform_record_declaration(cursor, node) {
                             node.children.append(child)
                         }
                     case "static_initializer":
@@ -3809,6 +3821,52 @@ extension JavaParser {
             _ = cursor.gotoParent()
         }
         self.leave_receiver_parameter(node)
+        return node
+    }
+
+    func transform_record_declaration(_ cursor: TreeCursor, _ parent: AST?) -> javaast_record_declaration? {
+        self.enter_record_declaration()
+        let node = javaast_record_declaration(pos: Common.Position(Int(cursor.node.startPosition.row), Int(cursor.node.startPosition.column), Int(cursor.node.endPosition.row), Int(cursor.node.endPosition.column), Int(cursor.node.startByte), Int(cursor.node.endByte)), parent: parent)
+        if cursor.gotoFirstChild() {
+            repeat {
+                if self.handle_common(node, cursor) { continue }
+
+                switch cursor.fieldName() {
+                case "body":
+                    switch cursor.node.kind {
+                    case "class_body":
+                        node.body = self.transform_class_body(cursor, node)
+                    default:
+                        print("invalid fieldName cursor.node.kind: ", cursor.node.kind, cursor.node.kindId, cursor.node.isExtra(), cursor.node.isError(), cursor.fieldName() ?? "")
+                    }
+                case "name":
+                    switch cursor.node.kind {
+                    case "identifier":
+                        node.name = self.transform_identifier(cursor, node)
+                    default:
+                        print("invalid fieldName cursor.node.kind: ", cursor.node.kind, cursor.node.kindId, cursor.node.isExtra(), cursor.node.isError(), cursor.fieldName() ?? "")
+                    }
+                case "parameters":
+                    switch cursor.node.kind {
+                    case "formal_parameters":
+                        node.parameters = self.transform_formal_parameters(cursor, node)
+                    default:
+                        print("invalid fieldName cursor.node.kind: ", cursor.node.kind, cursor.node.kindId, cursor.node.isExtra(), cursor.node.isError(), cursor.fieldName() ?? "")
+                    }
+                default:
+                    switch cursor.node.kind {
+                    case "modifiers":
+                        if let child = self.transform_modifiers(cursor, node) {
+                            node.children = child
+                        }
+                    default:
+                        print("invalid cursor.node.kind: ", cursor.node.kind, cursor.node.kindId, cursor.node.isExtra(), cursor.node.isError(), cursor.fieldName() ?? "")
+                    }
+                }
+            } while cursor.gotoNextSibling()
+            _ = cursor.gotoParent()
+        }
+        self.leave_record_declaration(node)
         return node
     }
 

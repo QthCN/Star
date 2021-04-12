@@ -1,4 +1,4 @@
-// This file is auto-generated from ts2st_JavaAST_20210407220827
+// This file is auto-generated from ts2st_JavaAST_20210411145127
 
 import Foundation
 import Common
@@ -10,6 +10,10 @@ class JavaAST: Common.AST {
     override init(pos: Common.Position, parent: AST? = nil) {
         super.init(pos: pos, parent: parent)
     }
+}
+
+class javaast_comment: JavaAST {
+
 }
 
 class javaast__literal: javaast_primary_expression {
@@ -165,7 +169,7 @@ class javaast_character_literal: javaast__literal {
 }
 
 class javaast_class_body: JavaAST {
-    // subtypes:  annotation_type_declaration block class_declaration constructor_declaration enum_declaration field_declaration interface_declaration method_declaration static_initializer
+    // subtypes:  annotation_type_declaration block class_declaration constructor_declaration enum_declaration field_declaration interface_declaration method_declaration record_declaration static_initializer
     var children: [JavaAST] = []
 }
 
@@ -180,9 +184,6 @@ class javaast_class_declaration: javaast_declaration {
 
 class javaast_class_literal: javaast_primary_expression {
     var children: javaast__unannotated_type? = nil
-}
-
-class javaast_comment: JavaAST {
 }
 
 class javaast_constant_declaration: JavaAST {
@@ -266,7 +267,7 @@ class javaast_enum_body: JavaAST {
 }
 
 class javaast_enum_body_declarations: JavaAST {
-    // subtypes:  annotation_type_declaration block class_declaration constructor_declaration enum_declaration field_declaration interface_declaration method_declaration static_initializer
+    // subtypes:  annotation_type_declaration block class_declaration constructor_declaration enum_declaration field_declaration interface_declaration method_declaration record_declaration static_initializer
     var children: [JavaAST] = []
 }
 
@@ -367,7 +368,16 @@ class javaast_hex_floating_point_literal: javaast__literal {
 class javaast_hex_integer_literal: javaast__literal {
 }
 
-class javaast_identifier: javaast_primary_expression {
+class javaast_identifier: javaast_primary_expression, UASTIdentifier {
+    var _declarations: [SymbolPosition] = []
+    
+    var declarations: [SymbolPosition] {
+        return self._declarations
+    }
+    
+    func setDeclarations(_ decls: [SymbolPosition]) {
+        self._declarations = decls
+    }
 }
 
 class javaast_if_statement: javaast_statement {
@@ -524,6 +534,13 @@ class javaast_program: JavaAST {
 class javaast_receiver_parameter: JavaAST {
     // subtypes:  _unannotated_type annotation identifier marker_annotation this
     var children: [JavaAST] = []
+}
+
+class javaast_record_declaration: JavaAST {
+    var body: javaast_class_body? = nil
+    var name: javaast_identifier? = nil
+    var parameters: javaast_formal_parameters? = nil
+    var children: javaast_modifiers? = nil
 }
 
 class javaast_requires_modifier: JavaAST {

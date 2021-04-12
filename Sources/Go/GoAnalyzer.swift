@@ -29,6 +29,7 @@ public class GoAnalyzer: Analyzer {
     // 清理分析结果
     func reset() {
         self.packages = [:]
+        self.fsPackages = [:]
     }
     
     public init() {}

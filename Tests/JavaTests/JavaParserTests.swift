@@ -64,8 +64,8 @@ final class JavaParserTests: XCTestCase {
         while i <= 10 {
             let cu = parser.parse(content: code)
             i += 1
-            //let dv = GoDeclVisiter(cu: cu, pkgScope: Scope(parent: nil, name: ""), fileObject: FileSystemObject())
-            //dv.visit_ast(cu.getAST()! as! GoAST)
+            //let dv = JavaVisiter()
+            //dv.visit_ast(cu.getAST()! as! JavaAST)
             
         }
         //let ast = parser.parse(content: code)
