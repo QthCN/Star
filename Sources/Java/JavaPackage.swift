@@ -11,21 +11,26 @@ import Common
 // 某个文件的import信息
 public class JavaImport: CustomStringConvertible {
     
-    // import a.b.c; => fullname: a.b.c
+    // import a.b.c; => fullname: a.b, classname: c
     // import a.b.*; => fullname: a.b
+    // import static a.b.c; => fullname: a, classname: b, methodname: c
     
     let fullname: String
+    let classname: String
+    let methodname: String
     let isAsterisk: Bool
     let isStatic: Bool
     
-    init(fullname: String, isAsterisk: Bool, isStatic: Bool) {
+    init(fullname: String, classname: String, methodname: String, isAsterisk: Bool, isStatic: Bool) {
         self.fullname = fullname
+        self.classname = classname
+        self.methodname = methodname
         self.isAsterisk = isAsterisk
         self.isStatic = isStatic
     }
     
     public var description: String {
-        return "\(fullname) A: \(isAsterisk) S: \(isStatic)"
+        return "\(fullname).\(classname).\(methodname)"
     }
 }
 
@@ -43,6 +48,12 @@ public class JavaPackage: CustomStringConvertible {
     let scope: Scope = Scope(parent: globalScope, name: "Package")
     // 文件与其import的信息
     var imports: [String:[JavaImport]] = [:]
+    // 文件依赖的package
+    var depPackages: [JavaPackage] = []
+    // 该package是否已经被type info分析过
+    var typeInfoAnalysised: Bool = false
+    // 该package是否已经被expr resolver分析过
+    var exprResolverAnalysised: Bool = false
     
     init(analyzer: JavaAnalyzer) {
         self.analyzer = analyzer
@@ -53,8 +64,8 @@ public class JavaPackage: CustomStringConvertible {
     }
     
     func addImport(filepath: String, impt: JavaImport) {
-        if var imports = self.imports[filepath] {
-            imports.append(impt)
+        if self.imports[filepath] != nil {
+            self.imports[filepath]!.append(impt)
         } else {
             self.imports[filepath] = [impt]
         }

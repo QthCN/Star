@@ -8,7 +8,7 @@
 import Foundation
 import Common
 
-let ignoreDirs = ["vender", "node_modules", ".git"]
+let ignoreDirs = ["vender", "node_modules", ".git", "examples"]
 
 public class JavaAnalyzer: Analyzer {
     var fs: FileSystem! = nil
@@ -78,15 +78,124 @@ public class JavaAnalyzer: Analyzer {
         self.analysisPackageDirs()
         
         // 生成import依赖图
+        self.analysisImportDependGraph()
         
         // 生成type definition信息
+        self.analysisTypeInfo()
         
         // 生成expr的type和identifier的resolve信息
         
     }
     
+    private var analysisTypeInfoPkgs: [JavaPackage] = []
+    
+    private func analysisTypeInfo() {
+        var pkgs: [JavaPackage] = []
+        while true {
+            // 执行分析
+            sem = DispatchSemaphore(value: 0)
+            var workers: [Thread] = []
+            self.analysisTypeInfoPkgs = pkgs
+            
+            var handled_pkgs_num = 0
+            
+            while handled_pkgs_num < self.analysisTypeInfoPkgs.count {
+                var i = 0
+                while i < self.config.thread_num {
+                    let target_id = i + handled_pkgs_num
+                    
+                    if target_id >= self.analysisTypeInfoPkgs.count {
+                        break
+                    }
+                    
+                    let worker = Thread(target: self, selector: #selector(analysisTypeInfoOnPkg), object: nil)
+                    workers.append(worker)
+                    worker.name = "\(target_id)"
+                    worker.stackSize = 16 * 1024 * 1024
+                    worker.start()
+                    
+                    i += 1
+                }
+                handled_pkgs_num += i
+                
+                for _ in workers {
+                    sem.wait()
+                }
+                workers = []
+            }
+            
+            self.analysisTypeInfoPkgs = []
+
+            // 标记为已经分析
+            for pkg in pkgs {
+                pkg.typeInfoAnalysised = true
+            }
+            
+            pkgs = []
+            
+            // 获取下一批
+            for (_, pkg) in self.packages {
+                if isPkgCanDoTypeInfoAnalysis(pkg: pkg) {
+                    pkgs.append(pkg)
+                }
+            }
+            
+            if pkgs.count == 0 {
+                break
+            }
+        }
+    }
+    
+    @objc private  func analysisTypeInfoOnPkg() {
+        let threadName = Int(Thread.current.name!)!
+        let pkg = self.analysisTypeInfoPkgs[threadName]
+        print("analysis package type info \(pkg)")
+        for (path, cu) in pkg.files {
+            let typeVisiter = JavaTypeVisiter(cu: cu, pkg: pkg, file: pkg.fileObjs[path]!)
+            typeVisiter.visit_ast(cu.getAST()! as! JavaAST)
+        }
+        sem.signal()
+    }
+    
+    private func isPkgCanDoTypeInfoAnalysis(pkg: JavaPackage) -> Bool {
+        if pkg.typeInfoAnalysised == true {
+            return false
+        }
+        
+        if pkg.depPackages.count == 0 {
+            return true
+        }
+        
+        for dp in pkg.depPackages {
+            if dp.typeInfoAnalysised == false {
+                return false
+            }
+        }
+        
+        return true
+    }
+    
     private func analysisImportDependGraph() {
-        // TODO
+        for (_, pkg) in self.packages {
+            //print("\(pkg): \(pkg.imports)")
+            for (_, pis) in pkg.imports {
+                for pi in pis {
+                    if let importPkg = self.packages[pi.fullname] {
+                        var exist = false
+                        for dp in pkg.depPackages {
+                            if dp.description == importPkg.description {
+                                exist = true
+                                break
+                            }
+                        }
+                        if !exist {
+                            pkg.depPackages.append(importPkg)
+                        }
+                        
+                    }
+                }
+            }
+        }
     }
     
     private var toAnalysisDir: [FileSystemObject] = []

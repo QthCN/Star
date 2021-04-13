@@ -325,21 +325,29 @@ class JavaDeclVisiter: JavaVisiter {
         // 获取name
         var fullname = ""
         var namestr = ""
+        var classname = ""
+        var methodname = ""
         if isStatic {
             namestr = parts[2]
+            var names = namestr.components(separatedBy: ".")
+            if names.count >= 3 {
+                classname = names.last!
+                names = names.dropLast()
+                methodname = names.last!
+                names = names.dropLast()
+                fullname = names.joined(separator: ".")
+            }
+            
         } else if parts.count > 1 {
             namestr = parts[1]
-        }
-        var names = namestr.components(separatedBy: ".")
-        if isAsterisk {
+            var names = namestr.components(separatedBy: ".")
+            classname = names.last!
             names = names.dropLast()
             fullname = names.joined(separator: ".")
-        } else {
-            fullname = namestr
         }
     
         if fullname != "" {
-            self.pkg.addImport(filepath: self.fileObject.rpath(), impt: JavaImport(fullname: fullname, isAsterisk: isAsterisk, isStatic: isStatic))
+            self.pkg.addImport(filepath: self.fileObject.rpath(), impt: JavaImport(fullname: fullname, classname: classname, methodname: methodname, isAsterisk: isAsterisk, isStatic: isStatic))
         }
         
         super.visit_import_declaration(node)
