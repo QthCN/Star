@@ -106,6 +106,10 @@ class JavaDeclVisiter: JavaVisiter {
             name.setDeclarations([
                 SymbolPosition(file: self.fileObject, node: name)
             ])
+            
+            let typ = JavaObjectype(name: self.cu.codes(pos: name.pos))
+            typ.setPosition(sp: SymbolPosition(file: self.fileObject, node: name))
+            name.setType(type: typ)
         }
         
         super.visit_class_declaration(node)
@@ -149,6 +153,10 @@ class JavaDeclVisiter: JavaVisiter {
             name.setDeclarations([
                 SymbolPosition(file: self.fileObject, node: name)
             ])
+            
+            let typ = JavaObjectype(name: self.cu.codes(pos: name.pos))
+            typ.setPosition(sp: SymbolPosition(file: self.fileObject, node: name))
+            name.setType(type: typ)
         }
         
         super.visit_enum_declaration(node)
@@ -206,6 +214,10 @@ class JavaDeclVisiter: JavaVisiter {
             name.setDeclarations([
                 SymbolPosition(file: self.fileObject, node: name)
             ])
+            
+            let typ = JavaObjectype(name: self.cu.codes(pos: name.pos))
+            typ.setPosition(sp: SymbolPosition(file: self.fileObject, node: name))
+            name.setType(type: typ)
         }
         
         super.visit_interface_declaration(node)
@@ -225,7 +237,40 @@ class JavaDeclVisiter: JavaVisiter {
     
     override func visit_method_declaration(_ node: javaast_method_declaration) {
         self.pushScope("MethodDeclaration")
+        if let name = node.name {
+            self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
+            name.setDeclarations([
+                SymbolPosition(file: self.fileObject, node: name)
+            ])
+        }
+        
+        if let parent = node.parent?.parent as? javaast_class_declaration {
+            if let typ = parent.name?.getType() as? JavaObjectype {
+                if let name = node.name {
+                    let v = JavaMethod(name: self.cu.codes(pos: name.pos))
+                    v.node = name
+                    typ.methodMembers.append(v)
+                }
+            }
+        }
         super.visit_method_declaration(node)
+        self.popScope()
+    }
+    
+    override func visit_constructor_declaration(_ node: javaast_constructor_declaration) {
+        self.pushScope("ConstructorDeclaration")
+        
+        if let parent = node.parent?.parent as? javaast_class_declaration {
+            if let typ = parent.name?.getType() as? JavaObjectype {
+                if let name = node.name {
+                    let v = JavaMethod(name: self.cu.codes(pos: name.pos))
+                    v.node = name
+                    typ.methodMembers.append(v)
+                }
+            }
+        }
+        
+        super.visit_constructor_declaration(node)
         self.popScope()
     }
     
@@ -238,6 +283,12 @@ class JavaDeclVisiter: JavaVisiter {
     override func visit_program(_ node: javaast_program) {
         self.pushScope("Program")
         super.visit_program(node)
+        self.popScope()
+    }
+    
+    override func visit_record_declaration(_ node: javaast_record_declaration) {
+        self.pushScope("RecordDeclaration")
+        super.visit_record_declaration(node)
         self.popScope()
     }
     
@@ -353,8 +404,66 @@ class JavaDeclVisiter: JavaVisiter {
         super.visit_import_declaration(node)
     }
     
+    override func visit_type_parameter(_ node: javaast_type_parameter) {
+        super.visit_type_parameter(node)
+        
+        for child in node.children {
+            if let name = child as? javaast_identifier {
+                self.currentScope.declare(name: self.cu.codes(pos: name.pos), node: name)
+                name.setDeclarations([
+                    SymbolPosition(file: self.fileObject, node: name)
+                ])
+            }
+        }
+    }
+    
+    override func visit_field_declaration(_ node: javaast_field_declaration) {
+        super.visit_field_declaration(node)
+        
+        if let parent = node.parent?.parent as? javaast_class_declaration {
+            if let typ = parent.name?.getType() as? JavaObjectype {
+                for variable in node.declarator {
+                    if let name = variable.name {
+                        let v = JavaVar(name: self.cu.codes(pos: name.pos))
+                        v.node = name
+                        typ.varMembers.append(v)
+                    }
+                }
+            }
+        }
+    }
+    
+    override func visit_field_access(_ node: javaast_field_access) {
+        if let ast = node.object {
+            self.visit_ast(ast)
+        }
+        
+        // 只处理object，其它的不处理
+        if let ast = node.field {
+            ast.setScope(self.currentScope)
+        }
+        
+        if let ast = node.children {
+            ast.setScope(self.currentScope)
+        }
+    }
+    
+    override func visit_identifier(_ node: javaast_identifier) {
+        super.visit_identifier(node)
+        
+        // 设置文件内的decl
+        let name = self.cu.codes(pos: node.pos)
+        if let decl = self.currentScope.find(name: name) {
+            node.setDeclarations([
+                SymbolPosition(file: self.fileObject, node: decl)
+            ])
+        }
+    }
+    
     
     // module_declaration
     // package_declaration
+    // javaast_annotated_type
+    // javaast_method_declaration
     
 }

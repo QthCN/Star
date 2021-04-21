@@ -40,9 +40,19 @@ class javaast__simple_type: javaast__unannotated_type {
     // subtype: javaast_void_type
 }
 
-class javaast__type: JavaAST {
+class javaast__type: JavaAST, UASTExpr {
     // subtype: javaast__unannotated_type
     // subtype: javaast_annotated_type
+    
+    var _type: JavaType? = nil
+    
+    func getType() -> Type? {
+        return self._type
+    }
+    
+    func setType(type: JavaType) {
+        self._type = type
+    }
 }
 
 class javaast__unannotated_type: javaast__type {
@@ -293,7 +303,7 @@ class javaast_explicit_constructor_invocation: JavaAST {
     var type_arguments: javaast_type_arguments? = nil
 }
 
-class javaast_expression: JavaAST {
+class javaast_expression: JavaAST, UASTExpr {
     // subtype: javaast_assignment_expression
     // subtype: javaast_binary_expression
     // subtype: javaast_cast_expression
@@ -303,6 +313,20 @@ class javaast_expression: JavaAST {
     // subtype: javaast_ternary_expression
     // subtype: javaast_unary_expression
     // subtype: javaast_update_expression
+    
+    var _type: JavaType? = nil
+    
+    func getType() -> Type? {
+        return self._type
+    }
+    
+    func setType(type: JavaType?) {
+        self._type = type
+    }
+    
+    func clearType() {
+        self._type = nil
+    }
 }
 
 class javaast_expression_statement: javaast_statement {

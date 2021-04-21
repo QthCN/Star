@@ -953,24 +953,24 @@ class JavaVisiter {
     func visit_constructor_declaration(_ node: javaast_constructor_declaration) {
         self.visit_node(node)
 
-        if let ast = node.body {
-            self.visit_constructor_body(ast)
-        }
-
         if let ast = node.name {
             self.visit_identifier(ast)
+        }
+        
+        if let ast = node.type_parameters {
+            self.visit_type_parameters(ast)
         }
 
         if let ast = node.parameters {
             self.visit_formal_parameters(ast)
         }
 
-        if let ast = node.type_parameters {
-            self.visit_type_parameters(ast)
-        }
-
         for ast in node.children {
             self.visit_ast(ast)
+        }
+        
+        if let ast = node.body {
+            self.visit_constructor_body(ast)
         }
 
         if self.handleError {
@@ -1272,17 +1272,17 @@ class JavaVisiter {
 
     func visit_field_access(_ node: javaast_field_access) {
         self.visit_node(node)
-
-        if let ast = node.field {
-            self.visit_ast(ast)
-        }
-
+        
         if let ast = node.object {
             self.visit_ast(ast)
         }
-
+        
         if let ast = node.children {
             self.visit_super(ast)
+        }
+
+        if let ast = node.field {
+            self.visit_ast(ast)
         }
 
         if self.handleError {
@@ -1651,10 +1651,6 @@ class JavaVisiter {
     func visit_method_declaration(_ node: javaast_method_declaration) {
         self.visit_node(node)
 
-        if let ast = node.body {
-            self.visit_block(ast)
-        }
-
         if let ast = node.dimensions {
             self.visit_dimensions(ast)
         }
@@ -1677,6 +1673,10 @@ class JavaVisiter {
 
         for ast in node.children {
             self.visit_ast(ast)
+        }
+        
+        if let ast = node.body {
+            self.visit_block(ast)
         }
 
         if self.handleError {

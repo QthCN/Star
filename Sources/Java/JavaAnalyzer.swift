@@ -84,7 +84,95 @@ public class JavaAnalyzer: Analyzer {
         self.analysisTypeInfo()
         
         // 生成expr的type和identifier的resolve信息
+        self.analysisSymbolInfo()
+    }
+    
+    private var analysisSymbolInfoPkgs: [JavaPackage] = []
+    
+    private func analysisSymbolInfo() {
+        // 从底层package开始从下往上处理。每次处理时从package中挑选 没有depPackage的 或者 所有的depPackage都已经被处理 的package进行处理
+        var pkgs: [JavaPackage] = []
+        while true {
+            // 执行分析
+            sem = DispatchSemaphore(value: 0)
+            var workers: [Thread] = []
+            self.analysisSymbolInfoPkgs = pkgs
+            var handled_pkgs_num = 0
+            
+            while handled_pkgs_num < self.analysisSymbolInfoPkgs.count {
+                var i = 0
+                while i < self.config.thread_num {
+                    let target_id = i + handled_pkgs_num
+                    
+                    if target_id >= self.analysisSymbolInfoPkgs.count {
+                        break
+                    }
+                    
+                    let worker = Thread(target: self, selector: #selector(analysisSymbolInfoOnPkg), object: nil)
+                    workers.append(worker)
+                    worker.name = "\(target_id)"
+                    worker.stackSize = 16 * 1024 * 1024
+                    worker.start()
+                    
+                    i += 1
+                }
+                handled_pkgs_num += i
+                
+                for _ in workers {
+                    sem.wait()
+                }
+                workers = []
+            }
+            
+            self.analysisSymbolInfoPkgs = []
+            
+            // 标记为已经分析
+            for pkg in pkgs {
+                pkg.exprResolverAnalysised = true
+            }
+            
+            pkgs = []
+            
+            // 获取下一批
+            for (_, pkg) in self.packages {
+                if isPkgCanDoSymbolInfoAnalysis(pkg: pkg) {
+                    pkgs.append(pkg)
+                }
+            }
+            
+            if pkgs.count == 0 {
+                break
+            }
+        }
+    }
+    
+    @objc private  func analysisSymbolInfoOnPkg() {
+        let threadName = Int(Thread.current.name!)!
+        let pkg = self.analysisSymbolInfoPkgs[threadName]
+        print("analysis package symbol info \(pkg)")
+        for (path, cu) in pkg.files {
+            let exprVisiter = JavaExprVisiter(cu: cu, pkg: pkg, file: pkg.fileObjs[path]!)
+            exprVisiter.visit_ast(cu.getAST()! as! JavaAST)
+        }
+        sem.signal()
+    }
+    
+    private func isPkgCanDoSymbolInfoAnalysis(pkg: JavaPackage) -> Bool {
+        if pkg.exprResolverAnalysised == true {
+            return false
+        }
         
+        if pkg.depPackages.count == 0 {
+            return true
+        }
+        
+        for dp in pkg.depPackages {
+            if dp.exprResolverAnalysised == false {
+                return false
+            }
+        }
+        
+        return true
     }
     
     private var analysisTypeInfoPkgs: [JavaPackage] = []
