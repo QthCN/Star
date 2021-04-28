@@ -1688,21 +1688,21 @@ class JavaVisiter {
 
     func visit_method_invocation(_ node: javaast_method_invocation) {
         self.visit_node(node)
-
-        if let ast = node.arguments {
-            self.visit_argument_list(ast)
-        }
-
-        if let ast = node.name {
-            self.visit_identifier(ast)
+        
+        if let ast = node.type_arguments {
+            self.visit_type_arguments(ast)
         }
 
         if let ast = node.object {
             self.visit_ast(ast)
         }
-
-        if let ast = node.type_arguments {
-            self.visit_type_arguments(ast)
+        
+        if let ast = node.name {
+            self.visit_identifier(ast)
+        }
+        
+        if let ast = node.arguments {
+            self.visit_argument_list(ast)
         }
 
         if let ast = node.children {

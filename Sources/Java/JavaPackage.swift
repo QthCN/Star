@@ -14,6 +14,7 @@ public class JavaImport: CustomStringConvertible {
     // import a.b.c; => fullname: a.b, classname: c
     // import a.b.*; => fullname: a.b
     // import static a.b.c; => fullname: a, classname: b, methodname: c
+    // import a; => classname: a
     
     let fullname: String
     let classname: String
@@ -72,7 +73,7 @@ public class JavaPackage: CustomStringConvertible {
     }
     
     func valid() -> Bool {
-        return self.name != ""
+        return self.files.keys.count > 0
     }
     
     func addFile(name: String, cu: CompilationUnion, fileObj: FileSystemObject) {
@@ -86,6 +87,28 @@ public class JavaPackage: CustomStringConvertible {
     
     func getFile(name: String) -> CompilationUnion? {
         return self.files[name]
+    }
+    
+    // 在Package的top level查找symbol
+    func findSymbol(name: String) -> SymbolPosition? {
+        // 当当前package下面搜索同名的文件，然后获取其文件中的class
+        if let cu = self.files["\(name).java"] {
+            if let symbolNode = cu.getAST()?.getScope()?.find(name: name, depth: 1) {
+                if let file = self.fileObjs["\(name).java"] {
+                    return SymbolPosition(file: file, node: symbolNode)
+                }
+            }
+        }
+        return nil
+    }
+    
+    // 根据某个import取对应的pkg
+    func getPkgByImport(_ imp: JavaImport) -> [JavaPackage] {
+        if imp.fullname == "" {
+            // import A;这种，A属于当前package
+            return [self]
+        }
+        return self.analyzer?.getPkgByImport(imp) ?? []
     }
     
 }

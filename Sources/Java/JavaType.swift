@@ -39,6 +39,7 @@ enum JavaBasicKind {
     case double
     case boolean
     case char
+    case string
 }
 
 class JavaUnknownType: JavaType {
@@ -114,7 +115,7 @@ public class JavaSignatureType: JavaType {
 }
 
 
-public class JavaVar {
+public class JavaVar: JavaType {
     var name: String?
     var rawType: JavaType?
     weak var node: JavaAST?
@@ -122,10 +123,14 @@ public class JavaVar {
     init(name: String) {
         self.name = name
     }
+    
+    override init() {
+        
+    }
 }
 
 
-public class JavaMethod {
+public class JavaMethod: JavaType {
     var name: String
     var sig: JavaSignatureType?
     weak var node: JavaAST?
@@ -167,4 +172,9 @@ public class JavaConcreteType: JavaType {
     public func setRawType(rawType: JavaType) {
         self.rawType = rawType
     }
+}
+
+// & 连接的type
+public class JavaSumType: JavaType {
+    var types: [JavaType] = []
 }

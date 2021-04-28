@@ -14,6 +14,7 @@ public class JavaAnalyzer: Analyzer {
     var fs: FileSystem! = nil
     var config: Configuration = Configuration()
     let queue = DispatchQueue(label: "star.javaanalyzer", qos: .userInteractive, attributes: .concurrent)
+    
     private var sem = DispatchSemaphore(value: 0)
     
     /// 分析结果
@@ -21,6 +22,7 @@ public class JavaAnalyzer: Analyzer {
     var packages: [String:JavaPackage] = [:]
     // package列表，key为package目录路径
     var fsPackages: [String:JavaPackage] = [:]
+    
     
     public init() {}
     
@@ -62,6 +64,40 @@ public class JavaAnalyzer: Analyzer {
         }
         
         return false
+    }
+    
+    func getClassPaths() -> [String] {
+        // TODO 根据配置文件生成该内容
+        return []
+    }
+    
+    func getPkgByImport(_ imp: JavaImport) -> [JavaPackage] {
+        // 根据imp的fullname搜索package
+        if imp.fullname == "" {
+            return []
+        }
+        
+        var cps = self.getClassPaths()
+        if cps.count == 0 {
+            cps = [""]
+        }
+        
+        // 根据路径搜索
+        for cp in cps {
+            let path = "\(cp)/\(imp.fullname)".replacingOccurrences(of: ".", with: "/").trimmingCharacters(in: ["/"])
+            
+            if let p = self.fsPackages[path] {
+                return [p]
+            }
+        }
+        
+        // 根据package的名字查找
+        if let p = self.packages[imp.fullname] {
+            return [p]
+        }
+        
+        return []
+
     }
     
     func reset() {

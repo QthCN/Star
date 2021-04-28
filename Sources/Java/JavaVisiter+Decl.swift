@@ -250,6 +250,7 @@ class JavaDeclVisiter: JavaVisiter {
                     let v = JavaMethod(name: self.cu.codes(pos: name.pos))
                     v.node = name
                     typ.methodMembers.append(v)
+                    name.setType(type: v)
                 }
             }
         }
@@ -358,6 +359,7 @@ class JavaDeclVisiter: JavaVisiter {
     
     override func visit_import_declaration(_ node: javaast_import_declaration) {
         var s = self.cu.codes(pos: node.pos)
+
         s = s.components(separatedBy: ";").first ?? ""
         let p = s.components(separatedBy: .whitespaces)
         var parts: [String] = []
@@ -366,7 +368,6 @@ class JavaDeclVisiter: JavaVisiter {
                 parts.append(item)
             }
         }
-        
         // 判断是否为asterisk
         let isAsterisk = parts.last!.hasSuffix(".*")
         
@@ -396,10 +397,9 @@ class JavaDeclVisiter: JavaVisiter {
             names = names.dropLast()
             fullname = names.joined(separator: ".")
         }
+        
     
-        if fullname != "" {
-            self.pkg.addImport(filepath: self.fileObject.rpath(), impt: JavaImport(fullname: fullname, classname: classname, methodname: methodname, isAsterisk: isAsterisk, isStatic: isStatic))
-        }
+        self.pkg.addImport(filepath: self.fileObject.rpath(), impt: JavaImport(fullname: fullname, classname: classname, methodname: methodname, isAsterisk: isAsterisk, isStatic: isStatic))
         
         super.visit_import_declaration(node)
     }
@@ -427,6 +427,7 @@ class JavaDeclVisiter: JavaVisiter {
                         let v = JavaVar(name: self.cu.codes(pos: name.pos))
                         v.node = name
                         typ.varMembers.append(v)
+                        name.setType(type: v)
                     }
                 }
             }
