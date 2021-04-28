@@ -16,6 +16,7 @@ final class JavaAnalyzerTests: XCTestCase {
     let NO_JAVA_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/JavaTests/JavaExampleRepos/NonJavaRepo"
     let JAVA_DECL_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/JavaTests/JavaExampleRepos/DeclRepo"
     let JAVA_TYPE_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/JavaTests/JavaExampleRepos/TypeRepo"
+    let JAVA_GENERIC_TYPE_REPO_PATH = "/Users/qintianhuan/Desktop/Projects/code.Series/code.Graph/Star/Tests/JavaTests/JavaExampleRepos/GenericTypeRepo"
     
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -143,8 +144,8 @@ final class JavaAnalyzerTests: XCTestCase {
         let fs = MacFileSystem(rootDir: JAVA_TYPE_REPO_PATH)
         analyzer.analysis(fs: fs, config: config)
         
-        var cu = analyzer.fsPackages[""]!.files["main.java"]!
-        var ast = cu.getAST()!
+        let cu = analyzer.fsPackages[""]!.files["main.java"]!
+        let ast = cu.getAST()!
         
         // class HelloWorld
         var id = ast.find(t: javaast_identifier.self, line: 10, col: 7) as? UASTExpr
@@ -200,12 +201,35 @@ final class JavaAnalyzerTests: XCTestCase {
         
         id = ast.find(t: javaast_identifier.self, line: 65, col: 9) as? UASTExpr
         XCTAssertTrue(id?.getType() is JavaBasicType)
-        print(id)
-        print(id?.getType())
         
         
         //print(analyzer.fsPackages[""]!.scope.dump())
     }
     
+    func testGenericTypeAnalysis() {
+        let config = Configuration()
+        let fs = MacFileSystem(rootDir: JAVA_GENERIC_TYPE_REPO_PATH)
+        analyzer.analysis(fs: fs, config: config)
+        
+        let cu = analyzer.fsPackages[""]!.files["main.java"]!
+        let ast = cu.getAST()!
+        
+        
+        var id = ast.find(t: javaast_type_identifier.self, line: 10, col: 9) as? UASTExpr
+        XCTAssertTrue(id?.getType() is JavaObjectype)
+        
+        id = ast.find(t: javaast_type_identifier.self, line: 10, col: 37) as? UASTExpr
+        XCTAssertTrue(id?.getType() is JavaObjectype)
+        
+        id = ast.find(t: javaast_identifier.self, line: 10, col: 28) as? UASTExpr
+        XCTAssertTrue(id?.getType() is JavaObjectype)
+        
+        id = ast.find(t: javaast_identifier.self, line: 11, col: 9) as? UASTExpr
+        //XCTAssertTrue(id?.getType() is JavaObjectype)
+        
+        print(id)
+        print(id?.getType())
+        //print(analyzer.fsPackages[""]!.scope.dump())
+    }
 }
 

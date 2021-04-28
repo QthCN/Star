@@ -253,7 +253,17 @@ class JavaDeclVisiter: JavaVisiter {
                     name.setType(type: v)
                 }
             }
+        } else if let parent = node.parent?.parent as? javaast_interface_declaration {
+            if let typ = parent.name?.getType() as? JavaObjectype {
+                if let name = node.name {
+                    let v = JavaMethod(name: self.cu.codes(pos: name.pos))
+                    v.node = name
+                    typ.methodMembers.append(v)
+                    name.setType(type: v)
+                }
+            }
         }
+        
         super.visit_method_declaration(node)
         self.popScope()
     }
@@ -262,6 +272,14 @@ class JavaDeclVisiter: JavaVisiter {
         self.pushScope("ConstructorDeclaration")
         
         if let parent = node.parent?.parent as? javaast_class_declaration {
+            if let typ = parent.name?.getType() as? JavaObjectype {
+                if let name = node.name {
+                    let v = JavaMethod(name: self.cu.codes(pos: name.pos))
+                    v.node = name
+                    typ.methodMembers.append(v)
+                }
+            }
+        } else if let parent = node.parent?.parent as? javaast_interface_declaration {
             if let typ = parent.name?.getType() as? JavaObjectype {
                 if let name = node.name {
                     let v = JavaMethod(name: self.cu.codes(pos: name.pos))
@@ -421,6 +439,17 @@ class JavaDeclVisiter: JavaVisiter {
         super.visit_field_declaration(node)
         
         if let parent = node.parent?.parent as? javaast_class_declaration {
+            if let typ = parent.name?.getType() as? JavaObjectype {
+                for variable in node.declarator {
+                    if let name = variable.name {
+                        let v = JavaVar(name: self.cu.codes(pos: name.pos))
+                        v.node = name
+                        typ.varMembers.append(v)
+                        name.setType(type: v)
+                    }
+                }
+            }
+        } else if let parent = node.parent?.parent as? javaast_interface_declaration {
             if let typ = parent.name?.getType() as? JavaObjectype {
                 for variable in node.declarator {
                     if let name = variable.name {

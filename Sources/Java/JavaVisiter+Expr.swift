@@ -193,9 +193,13 @@ class JavaExprVisiter: JavaVisiter {
         node.setType(type: typ)
     }
     
+    override func visit_generic_type(_ node: javaast_generic_type) {
+        super.visit_generic_type(node)
+    }
+    
     override func visit_local_variable_declaration(_ node: javaast_local_variable_declaration) {
         super.visit_local_variable_declaration(node)
-        
+
         if let typ = node.type?.getType() as? JavaType {
             for declarator in node.declarator {
                 if let i = declarator.name {
@@ -379,7 +383,6 @@ class JavaExprVisiter: JavaVisiter {
     }
     
     private func type_of_class_method_invocation(clazz: JavaObjectype, method_name: String, arguments: [javaast_expression]) -> JavaType?{
-        
         // 在当前clazz中搜索
         for method in clazz.methodMembers {
             if method.name != method_name {
@@ -425,6 +428,7 @@ class JavaExprVisiter: JavaVisiter {
     }
     
     private func type_of_class_member_invocation(clazz: JavaObjectype, member_name: String) -> JavaType? {
+
         // 在当前clazz中搜索
         for member in clazz.varMembers {
             if member.name == member_name {

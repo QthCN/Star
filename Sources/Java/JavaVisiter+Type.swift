@@ -58,7 +58,7 @@ class JavaTypeVisiter: JavaVisiter {
         }
         
         let s = self.cu.codes(pos: node!.pos)
-        
+
         // 根据node的类型获取其type
         switch typeNode {
         case is javaast_type_identifier:
@@ -226,6 +226,30 @@ class JavaTypeVisiter: JavaVisiter {
         nt.sig = sig
     }
     
+    override func visit_class_declaration(_ node: javaast_class_declaration) {
+        super.visit_class_declaration(node)
+        
+        if let ct = node.name?.getType() as? JavaObjectype {
+            // supertype
+            if let sc = node.superclass {
+                if let c = sc.children {
+                    if let t = c.getType() as? JavaType {
+                        ct.superClasses.append(t)
+                    }
+                }
+            }
+            
+            // interface
+            if let si = node.interfaces?.children {
+                for c in si.children {
+                    if let t = c.getType() as? JavaType {
+                        ct.superInterfaces.append(t)
+                    }
+                }
+            }
+        }
+    }
+    
     override func visit_scoped_type_identifier(_ node: javaast_scoped_type_identifier) {
         super.visit_scoped_type_identifier(node)
         
@@ -235,7 +259,17 @@ class JavaTypeVisiter: JavaVisiter {
     override func visit_generic_type(_ node: javaast_generic_type) {
         super.visit_generic_type(node)
         
-        // TODO
+        if node.children.count > 0 {
+            let tn = node.children[0]
+            if let typ = self.getType(tn) {
+                // TODO 这里简单一点，不做泛型了
+                //let ct = JavaConcreteType()
+                //ct.setRawType(rawType: typ)
+                //ct.setPosition(sp: SymbolPosition(file: self.file, node: node))
+                //node.setType(type: ct)
+                node.setType(type: typ)
+            }
+        }
     }
     
 }

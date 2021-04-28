@@ -74,17 +74,12 @@ public class JavaTypeVariable: JavaType {
 }
 
 public class JavaParameterizedType: JavaType {
-    var typeArguments: [JavaType] = []
-    // TODO weak?
-    var rawType: JavaType? = nil
+    var typeArguments: [String] = []
     
-    public func setTypeArguments(typeArguments: [JavaType]) {
+    public func setTypeArguments(typeArguments: [String]) {
         self.typeArguments = typeArguments
     }
     
-    public func setRawType(rawType: JavaType) {
-        self.rawType = rawType
-    }
 }
 
 public class JavaGenericArrayType: JavaType {

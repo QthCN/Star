@@ -431,13 +431,33 @@ public class JavaAnalyzer: Analyzer {
     }
     
     public func cu(fs: FileSystemObject) -> CompilationUnion? {
-        // TODO
+        if let pkg = self.fsPackages[fs.objPath()] {
+            return pkg.getFile(name: fs.objName())
+        }
         return nil
     }
     
     public func symbolInfo(cu: CompilationUnion, offset: Int) -> SymbolInfo? {
-        // TODO
-        return nil
+        guard let node = cu.getAST()?.find(offset: offset) else {
+            return nil
+        }
+        
+        let symbolInfo = SymbolInfo()
+        symbolInfo.cu = cu
+        symbolInfo.content = cu.codes(pos: node.pos)
+        symbolInfo.node = node
+        
+        // 获取type信息
+        if let expr = node as? UASTExpr {
+            symbolInfo.type = expr.getType()
+        }
+        
+        // 获取decl信息
+        if let ident = node as? UASTIdentifier {
+            symbolInfo.declarations = ident.listDeclarations()
+        }
+        
+        return symbolInfo
     }
     
     public func callGraph(symbol: SymbolInfo) -> CGCaller? {
