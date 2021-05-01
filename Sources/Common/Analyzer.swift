@@ -22,4 +22,7 @@ public protocol Analyzer {
     
     // 获取某个符号的callGraph信息
     func callGraph(symbol: SymbolInfo) -> CGCaller?
+    
+    // 获取某个文件的structure信息
+    func structure(cu: CompilationUnion) -> [Structure]
 }

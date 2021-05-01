@@ -30,5 +30,8 @@ public class CPPAnalyzer: Analyzer {
         return nil
     }
     
-    
+    public func structure(cu: CompilationUnion) -> [Structure] {
+        // TODO
+        return []
+    }
 }

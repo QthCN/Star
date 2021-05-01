@@ -503,4 +503,11 @@ public class GoAnalyzer: Analyzer {
         }
     }
     
+    public func structure(cu: CompilationUnion) -> [Structure] {
+        
+        guard let ast = cu.getAST() as? goast_source_file else {return []}
+        
+        return ast2structure(cu: cu, ast: ast)
+    }
+    
 }

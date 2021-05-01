@@ -233,6 +233,8 @@ final class GoAnalyzerTests: XCTestCase {
         let mainPkg = packages["gtr"]!
         let mainCU = mainPkg.files["main.go"]!
         let mainAST = mainCU.getAST()!
+        
+        //print(analyzer.structure(cu: mainCU))
     
         //let scope = mainPkg.scope
         //scope.dump()

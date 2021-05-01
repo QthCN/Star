@@ -437,5 +437,10 @@ public class JavaAnalyzer: Analyzer {
         // TODO
         return nil
     }
+    
+    public func structure(cu: CompilationUnion) -> [Structure] {
+        // TODO
+        return []
+    }
 }
 
