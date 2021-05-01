@@ -457,9 +457,6 @@ public class GoAnalyzer: Analyzer {
         if self.ifSymbolSupportCallGraph(symbol: symbolInfo) {
             symbolInfo.actions.append(.callGraph)
         }
-        if self.ifSymbolSupportTypeDetail(symbol: symbolInfo) {
-            symbolInfo.actions.append(.typeDetail)
-        }
         
         return symbolInfo
     }
