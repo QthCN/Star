@@ -87,7 +87,19 @@ private func ast2structure(cu: CompilationUnion, node: goast_method_declaration)
     var ss: [Structure] = []
     
     if let name = node.name {
-        ss.append(Structure(node: name, type: .function, name: cu.codes(pos: name.pos)))
+        if let receiver = node.receiver {
+            if receiver.children.count == 1 {
+                if let typ = (receiver.children[0] as? goast_parameter_declaration)?.type {
+                    ss.append(Structure(node: name, type: .function, name: "\(cu.codes(pos: typ.pos)).\(cu.codes(pos: name.pos))"))
+                } else {
+                    ss.append(Structure(node: name, type: .function, name: cu.codes(pos: name.pos)))
+                }
+            } else {
+                ss.append(Structure(node: name, type: .function, name: cu.codes(pos: name.pos)))
+            }
+        } else {
+            ss.append(Structure(node: name, type: .function, name: cu.codes(pos: name.pos)))
+        }
     }
     
     return ss
