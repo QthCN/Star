@@ -23,7 +23,6 @@ final class JavaAnalyzerTests: XCTestCase {
         let config = Configuration()
         let fs = MacFileSystem(rootDir: NO_JAVA_REPO_PATH)
         analyzer.analysis(fs: fs, config: config)
-        XCTAssertEqual(analyzer.isJavaProject(), false)
     }
 
     override func tearDownWithError() throws {
