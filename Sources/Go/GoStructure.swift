@@ -96,8 +96,7 @@ private func ast2structure(cu: CompilationUnion, node: goast_method_declaration)
 private func ast2structure(cu: CompilationUnion, node: goast_type_declaration) -> [Structure] {
     var ss: [Structure] = []
     
-    let typeIdents = node.finds(t: goast_type_identifier.self)
-    for name in typeIdents {
+    if let name = node.find(t: goast_type_identifier.self) {
         ss.append(Structure(node: name, type: .type, name: cu.codes(pos: name.pos)))
     }
     
