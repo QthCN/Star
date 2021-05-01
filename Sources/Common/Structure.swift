@@ -16,9 +16,9 @@ public enum StructureType {
 }
 
 public class Structure {
-    weak var node: AST! = nil
-    var name: String = ""
-    var type: StructureType = .imp
+    public weak var node: AST! = nil
+    public var name: String = ""
+    public var type: StructureType = .imp
     
     public init(node: AST, type: StructureType, name: String) {
         self.node = node
