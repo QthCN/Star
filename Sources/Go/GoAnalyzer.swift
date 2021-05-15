@@ -222,6 +222,8 @@ public class GoAnalyzer: Analyzer {
     private func analysisPackage(_ directory: FileSystemObject, _ package: GoPackage) {
         let dirItems = self.fs.listItems(path: directory)
         // 设置同一个package下的parser共用同一个scope
+        let parser = GoParser()
+        parser.scope = package.scope
         for dirItem in dirItems {
             if dirItem.dir() || !dirItem.objName().hasSuffix(".go") {
                 continue
@@ -231,9 +233,6 @@ public class GoAnalyzer: Analyzer {
             if dirItem.objName().hasSuffix("_test.go") {
                 continue
             }
-            
-            let parser = GoParser()
-            parser.scope = package.scope
             
             if let content = self.fs.getFileContent(item: dirItem) {
                 let cu = parser.parse(content: content)
