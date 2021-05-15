@@ -157,43 +157,21 @@ public class GoAnalyzer: Analyzer {
     
     private let lock = NSLock()
     
+    
+    
     private func analysisPackageDirs() {
-        sem = DispatchSemaphore(value: 0)
-        var workers: [Thread] = []
-        
         var handled_pkgs_num = 0
         
         while handled_pkgs_num < self.toAnalysisDir.count {
-            var i = 0
-            while i < self.config.thread_num {
-                let target_id = i + handled_pkgs_num
-                
-                if target_id >= self.toAnalysisDir.count {
-                    break
-                }
-                
-                let worker = Thread(target: self, selector: #selector(doAnalysisPackage), object: nil)
-                workers.append(worker)
-                worker.name = "\(target_id)"
-                worker.stackSize = 16 * 1024 * 1024
-                worker.start()
-                
-                i += 1
-            }
-            handled_pkgs_num += i
-            
-            for _ in workers {
-                sem.wait()
-            }
-            workers = []
+            doAnalysisPackage(handled_pkgs_num)
+            handled_pkgs_num += 1
         }
         
         self.toAnalysisDir = []
     }
     
-    @objc private  func doAnalysisPackage() {
-        let threadName = Int(Thread.current.name!)!
-        let dir = self.toAnalysisDir[threadName]
+    private  func doAnalysisPackage(_ idx: Int) {
+        let dir = self.toAnalysisDir[idx]
         print("analysis package \(dir)")
         let package = GoPackage(analyzer: self)
         // 分析这个package
@@ -216,7 +194,6 @@ public class GoAnalyzer: Analyzer {
             lock.unlock()
         }
         
-        sem.signal()
     }
     
     private func analysisPackage(_ directory: FileSystemObject, _ package: GoPackage) {
