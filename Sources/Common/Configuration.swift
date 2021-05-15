@@ -12,7 +12,7 @@ public class Configuration {
     
     public var thread_num: Int
     
-    public init(thread_num: Int = 1) {
+    public init(thread_num: Int = 32) {
         self.thread_num = thread_num
     }
 }
