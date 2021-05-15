@@ -192,12 +192,14 @@ public class GoAnalyzer: Analyzer {
     }
     
     @objc private  func doAnalysisPackage() {
+        lock.lock()
         let threadName = Int(Thread.current.name!)!
         let dir = self.toAnalysisDir[threadName]
         print("analysis package \(dir)")
         let package = GoPackage(analyzer: self)
         // 分析这个package
         self.analysisPackage(dir, package)
+        lock.unlock()
         
         // 判断package是否有效
         if package.valid() {
